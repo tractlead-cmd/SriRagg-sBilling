@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Billing App</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f5f5f5;
+    padding:20px;
+}
+
+.container{
+    max-width:400px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align:center;
+}
+
+input, button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+    font-size:16px;
+}
+
+button{
+    background:#007bff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0056b3;
+}
+
+.resetBtn{
+    background:#dc3545;
+}
+
+.resetBtn:hover{
+    background:#b02a37;
+}
+
+.whatsappBtn{
+    background:#25D366;
+}
+
+.whatsappBtn:hover{
+    background:#1da851;
+}
+
+.item{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #eee;
+    font-size:14px;
+}
+
+.totalBox{
+    margin-top:20px;
+    padding:15px;
+    background:#f0f0f0;
+    border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Billing App</h2>
+
+<input type="text"
+id="itemName"
+placeholder="Item Name">
+
+<input type="number"
+id="itemQty"
+placeholder="Quantity">
+
+<input type="number"
+id="itemPrice"
+placeholder="Price Per Item">
+
+<button onclick="addItem()">
+Add Item
+</button>
+
+<div id="itemList"></div>
+
+<div class="totalBox">
+
+<h3>
+Total Quantity:
+<span id="totalItems">0</span>
+</h3>
+
+<h3>
+Total Cost:
+₹<span id="totalCost">0</span>
+</h3>
+
+</div>
+
+<button class="whatsappBtn"
+onclick="sendWhatsApp()">
+Send on WhatsApp
+</button>
+
+<button class="resetBtn"
+onclick="resetBill()">
+Reset Bill
+</button>
+
+</div>
+
+<script>
+
+let items = [];
+
+function addItem(){
+
+    let name =
+    document.getElementById("itemName").value;
+
+    let qty =
+    parseFloat(
+    document.getElementById("itemQty").value
+    );
+
+    let price =
+    parseFloat(
+    document.getElementById("itemPrice").value
+    );
+
+    if(name === "" || isNaN(qty) || isNaN(price)){
+
+        alert("Please enter all fields");
+
+        return;
+    }
+
+    let total = qty * price;
+
+    items.push({
+        name:name,
+        qty:qty,
+        price:price,
+        total:total
+    });
+
+    displayItems();
+
+    updateTotals();
+
+    document.getElementById("itemName").value = "";
+
+    document.getElementById("itemQty").value = "";
+
+    document.getElementById("itemPrice").value = "";
+
+}
+
+function displayItems(){
+
+    let itemList =
+    document.getElementById("itemList");
+
+    itemList.innerHTML = "";
+
+    items.forEach((item)=>{
+
+        let div =
+        document.createElement("div");
+
+        div.className = "item";
+
+        div.innerHTML = `
+
+        <div>
+
+        <strong>${item.name}</strong><br>
+
+        Qty: ${item.qty}
+        × ₹${item.price}
+
+        </div>
+
+        <div>
+
+        ₹${item.total}
+
+        </div>
+
+        `;
+
+        itemList.appendChild(div);
+
+    });
+
+}
+
+function updateTotals(){
+
+    let totalCost = 0;
+
+    let totalItems = 0;
+
+    items.forEach((item)=>{
+
+        totalCost += item.total;
+
+        totalItems += item.qty;
+
+    });
+
+    document.getElementById("totalCost")
+    .innerText = totalCost;
+
+    document.getElementById("totalItems")
+    .innerText = totalItems;
+
+}
+
+function sendWhatsApp(){
+
+    if(items.length === 0){
+
+        alert("No items added");
+
+        return;
+    }
+
+    let totalCost = 0;
+
+    let totalItems = 0;
+
+    let message =
+    "🧾 BILL DETAILS\n\n";
+
+    items.forEach((item)=>{
+
+        message +=
+        item.name +
+        " | Qty: " + item.qty +
+        " | ₹" + item.total +
+        "\n";
+
+        totalCost += item.total;
+
+        totalItems += item.qty;
+
+    });
+
+    message +=
+    "\n------------------\n";
+
+    message +=
+    "Total Quantity: "
+    + totalItems + "\n";
+
+    message +=
+    "Total Cost: ₹"
+    + totalCost;
+
+    let url =
+    "https://api.whatsapp.com/send?text="
+    + encodeURIComponent(message);
+
+    window.open(url, "_blank");
+
+}
+
+function resetBill(){
+
+    items = [];
+
+    document.getElementById("itemList")
+    .innerHTML = "";
+
+    document.getElementById("totalCost")
+    .innerText = "0";
+
+    document.getElementById("totalItems")
+    .innerText = "0";
+
+    document.getElementById("itemName")
+    .value = "";
+
+    document.getElementById("itemQty")
+    .value = "";
+
+    document.getElementById("itemPrice")
+    .value = "";
+
+}
+
+</script>
+
+</body>
+</html>
