@@ -29,16 +29,24 @@ body{
     transition:0.3s;
 }
 
-h2{
-    text-align:center;
-    margin-bottom:5px;
+.headerTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:0;
+    padding:0;
+}
+
+.headerTop h2{
+    margin:0;
+    font-size:24px;
 }
 
 #dateTime{
-    text-align:center;
-    font-size:14px;
+    margin:0;
+    font-size:13px;
     color:gray;
-    margin-bottom:15px;
+    white-space:nowrap;
 }
 
 .topButtons{
@@ -133,11 +141,16 @@ button:hover{
 }
 
 .totalBox{
-    margin-top:15px;
+    margin-top:12px;
     margin-bottom:15px;
-    padding:15px;
+    padding:12px 15px;
     background:#f0f0f0;
     border-radius:10px;
+}
+
+.totalBox h3{
+    margin:4px 0;
+    font-size:16px;
 }
 
 .darkMode{
@@ -171,9 +184,27 @@ button:hover{
 
 <div class="container">
 
+<div class="headerTop">
+
 <h2>Billing App</h2>
 
 <p id="dateTime"></p>
+
+</div>
+
+<div class="totalBox">
+
+<h3>
+Total Quantity:
+<span id="totalItems">0</span>
+</h3>
+
+<h3>
+Total Cost:
+₹<span id="totalCost">0</span>
+</h3>
+
+</div>
 
 <div class="topButtons">
 
@@ -217,20 +248,6 @@ placeholder="Price Per Item">
 <button onclick="addItem()">
 Add Item
 </button>
-
-<div class="totalBox">
-
-<h3>
-Total Quantity:
-<span id="totalItems">0</span>
-</h3>
-
-<h3>
-Total Cost:
-₹<span id="totalCost">0</span>
-</h3>
-
-</div>
 
 <div id="itemList"></div>
 
@@ -486,11 +503,39 @@ function sendWhatsApp(){
 
     let totalItems = 0;
 
+    let now = new Date();
+
+    let billDate =
+    now.toLocaleDateString("en-IN",{
+
+        weekday:"long",
+        day:"2-digit",
+        month:"short",
+        year:"numeric"
+
+    });
+
+    let billTime =
+    now.toLocaleTimeString("en-IN",{
+
+        hour:"numeric",
+        minute:"2-digit"
+
+    });
+
     let message =
     "🧾 BILL DETAILS\n\n" +
 
     "Customer: " +
     customer +
+    "\n\n" +
+
+    "Date: " +
+    billDate +
+    "\n" +
+
+    "Time: " +
+    billTime +
     "\n\n";
 
     items.forEach((item)=>{
@@ -559,9 +604,9 @@ function updateDateTime(){
 
     let options = {
 
+        weekday:"short",
         day:"2-digit",
         month:"short",
-        year:"numeric",
         hour:"numeric",
         minute:"2-digit"
 
