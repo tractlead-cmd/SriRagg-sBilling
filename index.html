@@ -26,6 +26,17 @@ body{
 
 h2{
     text-align:center;
+    margin-bottom:10px;
+}
+
+.topButtons{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.topButtons button{
+    flex:1;
 }
 
 input, button{
@@ -65,16 +76,6 @@ button:hover{
     background:#1da851;
 }
 
-.buttonRow{
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
-
-.buttonRow button{
-    flex:1;
-}
-
 .item{
     display:flex;
     justify-content:space-between;
@@ -101,7 +102,8 @@ button:hover{
 }
 
 .totalBox{
-    margin-top:20px;
+    margin-top:15px;
+    margin-bottom:15px;
     padding:15px;
     background:#f0f0f0;
     border-radius:10px;
@@ -115,6 +117,20 @@ button:hover{
 <div class="container">
 
 <h2>Billing App</h2>
+
+<div class="topButtons">
+
+<button class="whatsappBtn"
+onclick="sendWhatsApp()">
+Send on WhatsApp
+</button>
+
+<button class="resetBtn"
+onclick="resetBill()">
+Reset Bill
+</button>
+
+</div>
 
 <input type="text"
 id="itemName"
@@ -132,8 +148,6 @@ placeholder="Price Per Item">
 Add Item
 </button>
 
-<div id="itemList"></div>
-
 <div class="totalBox">
 
 <h3>
@@ -148,19 +162,7 @@ Total Cost:
 
 </div>
 
-<div class="buttonRow">
-
-<button class="whatsappBtn"
-onclick="sendWhatsApp()">
-Send on WhatsApp
-</button>
-
-<button class="resetBtn"
-onclick="resetBill()">
-Reset Bill
-</button>
-
-</div>
+<div id="itemList"></div>
 
 </div>
 
@@ -168,26 +170,84 @@ Reset Bill
 
 let items = [];
 
+const itemName =
+document.getElementById("itemName");
+
+const itemQty =
+document.getElementById("itemQty");
+
+const itemPrice =
+document.getElementById("itemPrice");
+
+itemName.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter" || e.key === " "){
+
+        e.preventDefault();
+
+        itemQty.focus();
+
+    }
+
+});
+
+itemQty.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter" || e.key === " "){
+
+        e.preventDefault();
+
+        itemPrice.focus();
+
+    }
+
+});
+
+itemPrice.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter" || e.key === " "){
+
+        e.preventDefault();
+
+        addItem();
+
+    }
+
+});
+
+document.addEventListener("keydown",function(e){
+
+    if(e.altKey && e.key === "Enter"){
+
+        resetBill();
+
+    }
+
+    if(e.ctrlKey && e.key === "Enter"){
+
+        sendWhatsApp();
+
+    }
+
+});
+
 function addItem(){
 
     let name =
-    document.getElementById("itemName").value;
+    itemName.value;
 
     let qty =
-    parseFloat(
-    document.getElementById("itemQty").value
-    );
+    parseFloat(itemQty.value);
 
     let price =
-    parseFloat(
-    document.getElementById("itemPrice").value
-    );
+    parseFloat(itemPrice.value);
 
     if(name === "" || isNaN(qty) || isNaN(price)){
 
         alert("Please enter all fields");
 
         return;
+
     }
 
     let total = qty * price;
@@ -203,11 +263,13 @@ function addItem(){
 
     updateTotals();
 
-    document.getElementById("itemName").value = "";
+    itemName.value = "";
 
-    document.getElementById("itemQty").value = "";
+    itemQty.value = "";
 
-    document.getElementById("itemPrice").value = "";
+    itemPrice.value = "";
+
+    itemName.focus();
 
 }
 
@@ -295,6 +357,7 @@ function sendWhatsApp(){
         alert("No items added");
 
         return;
+
     }
 
     let totalCost = 0;
@@ -350,14 +413,13 @@ function resetBill(){
     document.getElementById("totalItems")
     .innerText = "0";
 
-    document.getElementById("itemName")
-    .value = "";
+    itemName.value = "";
 
-    document.getElementById("itemQty")
-    .value = "";
+    itemQty.value = "";
 
-    document.getElementById("itemPrice")
-    .value = "";
+    itemPrice.value = "";
+
+    itemName.focus();
 
 }
 
