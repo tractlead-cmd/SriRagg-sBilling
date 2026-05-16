@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
@@ -10,9 +13,10 @@ content="width=device-width, initial-scale=1.0">
 <style>
 
 body{
-    font-family: Arial, sans-serif;
+    font-family:Arial,sans-serif;
     background:#f5f5f5;
     padding:20px;
+    transition:0.3s;
 }
 
 .container{
@@ -22,11 +26,19 @@ body{
     padding:20px;
     border-radius:12px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
+    transition:0.3s;
 }
 
 h2{
     text-align:center;
-    margin-bottom:10px;
+    margin-bottom:5px;
+}
+
+#dateTime{
+    text-align:center;
+    font-size:14px;
+    color:gray;
+    margin-bottom:15px;
 }
 
 .topButtons{
@@ -39,7 +51,7 @@ h2{
     flex:1;
 }
 
-input, button{
+input,button{
     width:100%;
     padding:12px;
     margin-top:10px;
@@ -60,6 +72,14 @@ button:hover{
     background:#0056b3;
 }
 
+.whatsappBtn{
+    background:#25D366;
+}
+
+.whatsappBtn:hover{
+    background:#1da851;
+}
+
 .resetBtn{
     background:#dc3545;
 }
@@ -68,12 +88,12 @@ button:hover{
     background:#b02a37;
 }
 
-.whatsappBtn{
-    background:#25D366;
+.darkBtn{
+    background:#333;
 }
 
-.whatsappBtn:hover{
-    background:#1da851;
+.darkBtn:hover{
+    background:#111;
 }
 
 .item{
@@ -85,20 +105,31 @@ button:hover{
     font-size:14px;
 }
 
-.cancelBtn{
+.itemButtons{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
     margin-top:5px;
-    padding:6px 10px;
-    background:#dc3545;
-    color:white;
+}
+
+.editBtn{
+    background:#ffc107;
+    color:black;
     border:none;
+    padding:6px 10px;
     border-radius:5px;
     cursor:pointer;
     font-size:12px;
-    width:auto;
 }
 
-.cancelBtn:hover{
-    background:#b02a37;
+.cancelBtn{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:12px;
 }
 
 .totalBox{
@@ -109,7 +140,31 @@ button:hover{
     border-radius:10px;
 }
 
+.darkMode{
+    background:#111;
+    color:white;
+}
+
+.darkMode .container{
+    background:#1e1e1e;
+}
+
+.darkMode input{
+    background:#333;
+    color:white;
+    border:1px solid #555;
+}
+
+.darkMode .totalBox{
+    background:#333;
+}
+
+.darkMode #dateTime{
+    color:#ccc;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -118,19 +173,34 @@ button:hover{
 
 <h2>Billing App</h2>
 
+<p id="dateTime"></p>
+
 <div class="topButtons">
 
 <button class="whatsappBtn"
 onclick="sendWhatsApp()">
-Send on WhatsApp
+Send WhatsApp
 </button>
 
 <button class="resetBtn"
 onclick="resetBill()">
-Reset Bill
+Reset
+</button>
+
+<button class="darkBtn"
+onclick="toggleDarkMode()">
+🌙
 </button>
 
 </div>
+
+<input type="text"
+id="customerName"
+placeholder="Customer Name">
+
+<input type="number"
+id="customerPhone"
+placeholder="WhatsApp Number">
 
 <input type="text"
 id="itemName"
@@ -181,7 +251,7 @@ document.getElementById("itemPrice");
 
 itemName.addEventListener("keydown",function(e){
 
-    if(e.key === "Enter" || e.key === " "){
+    if(e.key==="Enter" || e.key===" "){
 
         e.preventDefault();
 
@@ -193,7 +263,7 @@ itemName.addEventListener("keydown",function(e){
 
 itemQty.addEventListener("keydown",function(e){
 
-    if(e.key === "Enter" || e.key === " "){
+    if(e.key==="Enter" || e.key===" "){
 
         e.preventDefault();
 
@@ -205,7 +275,7 @@ itemQty.addEventListener("keydown",function(e){
 
 itemPrice.addEventListener("keydown",function(e){
 
-    if(e.key === "Enter" || e.key === " "){
+    if(e.key==="Enter" || e.key===" "){
 
         e.preventDefault();
 
@@ -217,13 +287,13 @@ itemPrice.addEventListener("keydown",function(e){
 
 document.addEventListener("keydown",function(e){
 
-    if(e.altKey && e.key === "Enter"){
+    if(e.altKey && e.key==="Enter"){
 
         resetBill();
 
     }
 
-    if(e.ctrlKey && e.key === "Enter"){
+    if(e.ctrlKey && e.key==="Enter"){
 
         sendWhatsApp();
 
@@ -242,7 +312,7 @@ function addItem(){
     let price =
     parseFloat(itemPrice.value);
 
-    if(name === "" || isNaN(qty) || isNaN(price)){
+    if(name==="" || isNaN(qty) || isNaN(price)){
 
         alert("Please enter all fields");
 
@@ -250,24 +320,27 @@ function addItem(){
 
     }
 
-    let total = qty * price;
+    let total =
+    qty * price;
 
     items.push({
+
         name:name,
         qty:qty,
         price:price,
         total:total
+
     });
 
     displayItems();
 
     updateTotals();
 
-    itemName.value = "";
+    saveToLocalStorage();
 
-    itemQty.value = "";
-
-    itemPrice.value = "";
+    itemName.value="";
+    itemQty.value="";
+    itemPrice.value="";
 
     itemName.focus();
 
@@ -300,13 +373,23 @@ function displayItems(){
 
         <div style="text-align:right;">
 
-        ₹${item.total}<br>
+        ₹${item.total}
+
+        <div class="itemButtons">
+
+        <button
+        class="editBtn"
+        onclick="editItem(${index})">
+        Edit
+        </button>
 
         <button
         class="cancelBtn"
         onclick="removeItem(${index})">
         Cancel
         </button>
+
+        </div>
 
         </div>
 
@@ -318,6 +401,26 @@ function displayItems(){
 
 }
 
+function editItem(index){
+
+    let item = items[index];
+
+    itemName.value = item.name;
+
+    itemQty.value = item.qty;
+
+    itemPrice.value = item.price;
+
+    items.splice(index,1);
+
+    displayItems();
+
+    updateTotals();
+
+    saveToLocalStorage();
+
+}
+
 function removeItem(index){
 
     items.splice(index,1);
@@ -325,6 +428,8 @@ function removeItem(index){
     displayItems();
 
     updateTotals();
+
+    saveToLocalStorage();
 
 }
 
@@ -350,9 +455,18 @@ function updateTotals(){
 
 }
 
+function saveToLocalStorage(){
+
+    localStorage.setItem(
+        "billingItems",
+        JSON.stringify(items)
+    );
+
+}
+
 function sendWhatsApp(){
 
-    if(items.length === 0){
+    if(items.length===0){
 
         alert("No items added");
 
@@ -360,19 +474,33 @@ function sendWhatsApp(){
 
     }
 
+    let customer =
+    document.getElementById("customerName")
+    .value;
+
+    let phone =
+    document.getElementById("customerPhone")
+    .value;
+
     let totalCost = 0;
 
     let totalItems = 0;
 
     let message =
-    "🧾 BILL DETAILS\n\n";
+    "🧾 BILL DETAILS\n\n" +
+
+    "Customer: " +
+    customer +
+    "\n\n";
 
     items.forEach((item)=>{
 
         message +=
         item.name +
-        " | Qty: " + item.qty +
-        " | ₹" + item.total +
+        " | Qty: " +
+        item.qty +
+        " | ₹" +
+        item.total +
         "\n";
 
         totalCost += item.total;
@@ -385,18 +513,20 @@ function sendWhatsApp(){
     "\n------------------\n";
 
     message +=
-    "Total Quantity: "
-    + totalItems + "\n";
+    "Total Quantity: " +
+    totalItems + "\n";
 
     message +=
-    "Total Cost: ₹"
-    + totalCost;
+    "Total Cost: ₹" +
+    totalCost;
 
     let url =
-    "https://api.whatsapp.com/send?text="
-    + encodeURIComponent(message);
+    "https://wa.me/91" +
+    phone +
+    "?text=" +
+    encodeURIComponent(message);
 
-    window.open(url, "_blank");
+    window.open(url,"_blank");
 
 }
 
@@ -404,26 +534,69 @@ function resetBill(){
 
     items = [];
 
-    document.getElementById("itemList")
-    .innerHTML = "";
+    displayItems();
 
-    document.getElementById("totalCost")
-    .innerText = "0";
+    updateTotals();
 
-    document.getElementById("totalItems")
-    .innerText = "0";
+    saveToLocalStorage();
 
-    itemName.value = "";
+    itemName.value="";
+    itemQty.value="";
+    itemPrice.value="";
 
-    itemQty.value = "";
+}
 
-    itemPrice.value = "";
+function toggleDarkMode(){
 
-    itemName.focus();
+    document.body.classList.toggle("darkMode");
+
+}
+
+function updateDateTime(){
+
+    let now =
+    new Date();
+
+    let options = {
+
+        day:"2-digit",
+        month:"short",
+        year:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
+
+    };
+
+    document.getElementById("dateTime")
+    .innerText =
+    now.toLocaleString("en-IN",options);
+
+}
+
+setInterval(updateDateTime,1000);
+
+window.onload = function(){
+
+    let savedItems =
+    localStorage.getItem("billingItems");
+
+    if(savedItems){
+
+        items =
+        JSON.parse(savedItems);
+
+        displayItems();
+
+        updateTotals();
+
+    }
+
+    updateDateTime();
 
 }
 
 </script>
 
 </body>
+
 </html>
