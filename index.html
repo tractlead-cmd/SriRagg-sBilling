@@ -268,7 +268,7 @@ document.getElementById("itemPrice");
 
 itemName.addEventListener("keydown",function(e){
 
-    if(e.key==="Enter" || e.key===" "){
+    if(e.key==="Enter"){
 
         e.preventDefault();
 
@@ -280,7 +280,7 @@ itemName.addEventListener("keydown",function(e){
 
 itemQty.addEventListener("keydown",function(e){
 
-    if(e.key==="Enter" || e.key===" "){
+    if(e.key==="Enter"){
 
         e.preventDefault();
 
@@ -504,6 +504,8 @@ function sendWhatsApp(){
     let totalItems = 0;
 
     let now = new Date();
+    let invoiceNumber =
+    "INV" + Date.now().toString().slice(-6);
 
     let billDate =
     now.toLocaleDateString("en-IN",{
@@ -526,6 +528,11 @@ function sendWhatsApp(){
     let message =
     "🧾 Sri Raghavendra Grocery | Bilekahalli\n\n" +
 
+    "Invoice No: " +
+    invoiceNumber +
+    "\n\n" +
+
+    
     "Customer: " +
     customer +
     "\n\n" +
