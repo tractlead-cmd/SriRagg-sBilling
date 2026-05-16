@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>Billing App</title>
 
@@ -64,12 +65,39 @@ button:hover{
     background:#1da851;
 }
 
+.buttonRow{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.buttonRow button{
+    flex:1;
+}
+
 .item{
     display:flex;
     justify-content:space-between;
+    align-items:flex-start;
     padding:10px 0;
     border-bottom:1px solid #eee;
     font-size:14px;
+}
+
+.cancelBtn{
+    margin-top:5px;
+    padding:6px 10px;
+    background:#dc3545;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:12px;
+    width:auto;
+}
+
+.cancelBtn:hover{
+    background:#b02a37;
 }
 
 .totalBox{
@@ -120,6 +148,8 @@ Total Cost:
 
 </div>
 
+<div class="buttonRow">
+
 <button class="whatsappBtn"
 onclick="sendWhatsApp()">
 Send on WhatsApp
@@ -129,6 +159,8 @@ Send on WhatsApp
 onclick="resetBill()">
 Reset Bill
 </button>
+
+</div>
 
 </div>
 
@@ -186,7 +218,7 @@ function displayItems(){
 
     itemList.innerHTML = "";
 
-    items.forEach((item)=>{
+    items.forEach((item,index)=>{
 
         let div =
         document.createElement("div");
@@ -204,9 +236,15 @@ function displayItems(){
 
         </div>
 
-        <div>
+        <div style="text-align:right;">
 
-        ₹${item.total}
+        ₹${item.total}<br>
+
+        <button
+        class="cancelBtn"
+        onclick="removeItem(${index})">
+        Cancel
+        </button>
 
         </div>
 
@@ -215,6 +253,16 @@ function displayItems(){
         itemList.appendChild(div);
 
     });
+
+}
+
+function removeItem(index){
+
+    items.splice(index,1);
+
+    displayItems();
+
+    updateTotals();
 
 }
 
