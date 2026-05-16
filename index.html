@@ -186,7 +186,7 @@ button:hover{
 
 <div class="headerTop">
 
-<h2>Billing App</h2>
+<h2>Sri Raghavendra Grocery</h2>
 
 <p id="dateTime"></p>
 
@@ -257,6 +257,9 @@ Add Item
 
 let items = [];
 
+let invoiceCounter =
+localStorage.getItem("invoiceCounter") || 1;
+
 const itemName =
 document.getElementById("itemName");
 
@@ -292,7 +295,7 @@ itemQty.addEventListener("keydown",function(e){
 
 itemPrice.addEventListener("keydown",function(e){
 
-    if(e.key==="Enter" || e.key===" "){
+    if(e.key==="Enter"){
 
         e.preventDefault();
 
@@ -321,7 +324,7 @@ document.addEventListener("keydown",function(e){
 function addItem(){
 
     let name =
-    itemName.value;
+    itemName.value.trim();
 
     let qty =
     parseFloat(itemQty.value);
@@ -504,8 +507,10 @@ function sendWhatsApp(){
     let totalItems = 0;
 
     let now = new Date();
+
     let invoiceNumber =
-    "INV" + Date.now().toString().slice(-6);
+    "SRG-" +
+    String(invoiceCounter).padStart(4,"0");
 
     let billDate =
     now.toLocaleDateString("en-IN",{
@@ -526,13 +531,12 @@ function sendWhatsApp(){
     });
 
     let message =
-    "🧾 Sri Raghavendra Grocery | Bilekahalli\n\n" +
+    "Sri Raghavendra Grocery | Bilekahalli\n\n" +
 
     "Invoice No: " +
     invoiceNumber +
     "\n\n" +
 
-    
     "Customer: " +
     customer +
     "\n\n" +
@@ -564,17 +568,17 @@ function sendWhatsApp(){
     message +=
     "\n------------------\n";
 
-message +=
-"Total Quantity: " +
-totalItems + "\n";
+    message +=
+    "Total Quantity: " +
+    totalItems + "\n";
 
-message +=
-"Total Cost: ₹" +
-totalCost +
+    message +=
+    "Total Cost: ₹" +
+    totalCost +
 
-"\n\nThank you for shopping with us 🙏" +
+    "\n\nThank you for shopping with us" +
 
-"\nVisit Again ❤️";
+    "\nVisit Again";
 
     let url =
     "https://wa.me/91" +
@@ -583,6 +587,13 @@ totalCost +
     encodeURIComponent(message);
 
     window.open(url,"_blank");
+
+    invoiceCounter++;
+
+    localStorage.setItem(
+        "invoiceCounter",
+        invoiceCounter
+    );
 
 }
 
@@ -599,6 +610,8 @@ function resetBill(){
     itemName.value="";
     itemQty.value="";
     itemPrice.value="";
+
+    itemName.focus();
 
 }
 
