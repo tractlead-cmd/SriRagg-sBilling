@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -33,13 +34,17 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin:0;
-    padding:0;
+}
+
+.titleRow{
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
 .headerTop h2{
     margin:0;
-    font-size:24px;
+    font-size:22px;
 }
 
 #dateTime{
@@ -49,14 +54,40 @@ body{
     white-space:nowrap;
 }
 
-.topButtons{
+.menuButtons{
     display:flex;
-    gap:10px;
-    margin-bottom:15px;
+    gap:8px;
 }
 
-.topButtons button{
-    flex:1;
+.menuBtn{
+    width:auto;
+    padding:8px 12px;
+    margin-top:0;
+    background:#444;
+    font-size:18px;
+}
+
+.menuBtn:hover{
+    background:#222;
+}
+
+.darkBtn{
+    width:auto;
+    padding:8px 12px;
+    margin-top:0;
+    background:#222;
+}
+
+.darkBtn:hover{
+    background:#000;
+}
+
+.menuBox{
+    display:none;
+    flex-direction:column;
+    gap:10px;
+    margin-top:15px;
+    margin-bottom:15px;
 }
 
 input,button{
@@ -96,14 +127,6 @@ button:hover{
     background:#b02a37;
 }
 
-.darkBtn{
-    background:#333;
-}
-
-.darkBtn:hover{
-    background:#111;
-}
-
 .item{
     display:flex;
     justify-content:space-between;
@@ -130,7 +153,7 @@ button:hover{
     font-size:12px;
 }
 
-.cancelBtn{
+.deleteBtn{
     background:#dc3545;
     color:white;
     border:none;
@@ -186,9 +209,41 @@ button:hover{
 
 <div class="headerTop">
 
+<div class="titleRow">
+
 <h2>Sri Raghavendra Grocery</h2>
 
+<div class="menuButtons">
+
+<button class="menuBtn"
+onclick="toggleMenu()">
+☰
+</button>
+
+<button class="darkBtn"
+onclick="toggleDarkMode()">
+🌙
+</button>
+
+</div>
+
+</div>
+
 <p id="dateTime"></p>
+
+</div>
+
+<div id="menuBox" class="menuBox">
+
+<button class="whatsappBtn"
+onclick="sendWhatsApp()">
+Share on WhatsApp
+</button>
+
+<button class="resetBtn"
+onclick="resetBill()">
+Reset Bill
+</button>
 
 </div>
 
@@ -197,31 +252,15 @@ button:hover{
 <h3>
 Total Quantity:
 <span id="totalItems">0</span>
+
+| Unique:
+<span id="uniqueItems">0</span>
 </h3>
 
 <h3>
 Total Cost:
 ₹<span id="totalCost">0</span>
 </h3>
-
-</div>
-
-<div class="topButtons">
-
-<button class="whatsappBtn"
-onclick="sendWhatsApp()">
-Send WhatsApp
-</button>
-
-<button class="resetBtn"
-onclick="resetBill()">
-Reset
-</button>
-
-<button class="darkBtn"
-onclick="toggleDarkMode()">
-🌙
-</button>
 
 </div>
 
@@ -321,6 +360,23 @@ document.addEventListener("keydown",function(e){
 
 });
 
+function toggleMenu(){
+
+    let menu =
+    document.getElementById("menuBox");
+
+    if(menu.style.display==="flex"){
+
+        menu.style.display="none";
+
+    }else{
+
+        menu.style.display="flex";
+
+    }
+
+}
+
 function addItem(){
 
     let name =
@@ -404,9 +460,9 @@ function displayItems(){
         </button>
 
         <button
-        class="cancelBtn"
+        class="deleteBtn"
         onclick="removeItem(${index})">
-        Cancel
+        Delete
         </button>
 
         </div>
@@ -459,6 +515,8 @@ function updateTotals(){
 
     let totalItems = 0;
 
+    let uniqueItems = items.length;
+
     items.forEach((item)=>{
 
         totalCost += item.total;
@@ -472,6 +530,9 @@ function updateTotals(){
 
     document.getElementById("totalItems")
     .innerText = totalItems;
+
+    document.getElementById("uniqueItems")
+    .innerText = uniqueItems;
 
 }
 
@@ -573,6 +634,10 @@ function sendWhatsApp(){
     totalItems + "\n";
 
     message +=
+    "Unique Items: " +
+    items.length + "\n";
+
+    message +=
     "Total Cost: ₹" +
     totalCost +
 
@@ -619,6 +684,22 @@ function toggleDarkMode(){
 
     document.body.classList.toggle("darkMode");
 
+    if(document.body.classList.contains("darkMode")){
+
+        localStorage.setItem(
+            "darkMode",
+            "enabled"
+        );
+
+    }else{
+
+        localStorage.setItem(
+            "darkMode",
+            "disabled"
+        );
+
+    }
+
 }
 
 function updateDateTime(){
@@ -660,6 +741,15 @@ window.onload = function(){
 
     }
 
+    let darkMode =
+    localStorage.getItem("darkMode");
+
+    if(darkMode==="enabled"){
+
+        document.body.classList.add("darkMode");
+
+    }
+
     updateDateTime();
 
 }
@@ -669,3 +759,4 @@ window.onload = function(){
 </body>
 
 </html>
+```
