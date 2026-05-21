@@ -80,10 +80,10 @@ body{
 
 .menuBox{
     display:none;
-    flex-direction:column;
-    gap:10px;
-    margin-top:15px;
-    margin-bottom:15px;
+    gap:8px;
+    margin-top:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
 }
 
 input,button{
@@ -107,6 +107,14 @@ button:hover{
     background:#0056b3;
 }
 
+.whatsappBtn,
+.resetBtn{
+    width:auto;
+    padding:8px 12px;
+    margin-top:0;
+    font-size:18px;
+}
+
 .whatsappBtn{
     background:#25D366;
 }
@@ -121,6 +129,13 @@ button:hover{
 
 .resetBtn:hover{
     background:#b02a37;
+}
+
+#itemList{
+    max-height:300px;
+    overflow-y:auto;
+    margin-top:10px;
+    padding-right:5px;
 }
 
 .item{
@@ -222,11 +237,11 @@ button:hover{
     <div id="menuBox" class="menuBox">
 
         <button class="whatsappBtn" onclick="sendWhatsApp()">
-            Share on WhatsApp
+            📤
         </button>
 
         <button class="resetBtn" onclick="resetBill()">
-            Reset Bill
+            🗑
         </button>
 
     </div>
@@ -259,7 +274,7 @@ button:hover{
         Add Item
     </button>
 
-    <!-- TOTAL BOX FIXED -->
+    <!-- TOTAL BOX -->
 
     <div class="totalBox">
 
@@ -278,7 +293,7 @@ button:hover{
 
     </div>
 
-    <!-- ITEM LIST BELOW -->
+    <!-- ITEM LIST -->
 
     <div id="itemList"></div>
 
@@ -363,8 +378,6 @@ function addItem(){
     let price =
     parseFloat(itemPrice.value);
 
-    /* ITEM NAME OPTIONAL */
-
     if(isNaN(qty) || isNaN(price)){
 
         alert("Please enter quantity and price");
@@ -380,14 +393,32 @@ function addItem(){
     let total =
     qty * price;
 
-    items.push({
+    let existingItem =
+    items.find(item =>
+        item.name.toLowerCase() === name.toLowerCase()
+        &&
+        item.price === price
+    );
 
-        name:name,
-        qty:qty,
-        price:price,
-        total:total
+    if(existingItem){
 
-    });
+        existingItem.qty += qty;
+
+        existingItem.total =
+        existingItem.qty * existingItem.price;
+
+    }else{
+
+        items.push({
+
+            name:name,
+            qty:qty,
+            price:price,
+            total:total
+
+        });
+
+    }
 
     displayItems();
 
@@ -430,7 +461,7 @@ function displayItems(){
 
         <div style="text-align:right;">
 
-        ₹${item.total}
+        ₹${item.total.toFixed(2)}
 
         <div class="itemButtons">
 
@@ -508,7 +539,7 @@ function updateTotals(){
     });
 
     document.getElementById("totalCost")
-    .innerText = totalCost;
+    .innerText = totalCost.toFixed(2);
 
     document.getElementById("totalItems")
     .innerText = totalItems;
@@ -596,7 +627,7 @@ function sendWhatsApp(){
         " | Qty: " +
         item.qty +
         " | ₹" +
-        item.total +
+        item.total.toFixed(2) +
         "\n";
 
         totalCost += item.total;
@@ -616,7 +647,7 @@ function sendWhatsApp(){
 
     message +=
     "Total Cost: ₹" +
-    totalCost +
+    totalCost.toFixed(2) +
 
     "\n\nThank you for shopping with us" +
 
@@ -700,7 +731,7 @@ function updateDateTime(){
 
 }
 
-setInterval(updateDateTime,1000);
+setInterval(updateDateTime,60000);
 
 window.onload = function(){
 
