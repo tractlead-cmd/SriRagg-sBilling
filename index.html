@@ -30,6 +30,7 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    margin-bottom:15px;
 }
 
 .titleRow{
@@ -55,22 +56,16 @@ body{
     gap:8px;
 }
 
-.menuBtn{
-    width:auto;
-    padding:8px 12px;
-    margin-top:0;
-    background:#444;
-    font-size:18px;
-}
-
-.menuBtn:hover{
-    background:#222;
-}
-
+.whatsappBtn,
+.resetBtn,
 .darkBtn{
     width:auto;
     padding:8px 12px;
     margin-top:0;
+    font-size:18px;
+}
+
+.darkBtn{
     background:#222;
 }
 
@@ -78,12 +73,20 @@ body{
     background:#000;
 }
 
-.menuBox{
-    display:none;
-    gap:8px;
-    margin-top:12px;
-    margin-bottom:12px;
-    flex-wrap:wrap;
+.whatsappBtn{
+    background:#25D366;
+}
+
+.whatsappBtn:hover{
+    background:#1da851;
+}
+
+.resetBtn{
+    background:#dc3545;
+}
+
+.resetBtn:hover{
+    background:#b02a37;
 }
 
 input,button{
@@ -107,28 +110,17 @@ button:hover{
     background:#0056b3;
 }
 
-.whatsappBtn,
-.resetBtn{
-    width:auto;
-    padding:8px 12px;
-    margin-top:0;
-    font-size:18px;
+.totalBox{
+    margin-top:15px;
+    margin-bottom:15px;
+    padding:12px 15px;
+    background:#f0f0f0;
+    border-radius:10px;
 }
 
-.whatsappBtn{
-    background:#25D366;
-}
-
-.whatsappBtn:hover{
-    background:#1da851;
-}
-
-.resetBtn{
-    background:#dc3545;
-}
-
-.resetBtn:hover{
-    background:#b02a37;
+.totalBox h3{
+    margin:4px 0;
+    font-size:16px;
 }
 
 #itemList{
@@ -174,19 +166,6 @@ button:hover{
     font-size:12px;
 }
 
-.totalBox{
-    margin-top:15px;
-    margin-bottom:15px;
-    padding:12px 15px;
-    background:#f0f0f0;
-    border-radius:10px;
-}
-
-.totalBox h3{
-    margin:4px 0;
-    font-size:16px;
-}
-
 .darkMode{
     background:#111;
     color:white;
@@ -224,25 +203,27 @@ button:hover{
             <h2>SriRagg's</h2>
 
             <div class="menuButtons">
-                <button class="menuBtn" onclick="toggleMenu()">☰</button>
-                <button class="darkBtn" onclick="toggleDarkMode()">🌙</button>
+
+                <button class="whatsappBtn"
+                onclick="sendWhatsApp()">
+                    📤
+                </button>
+
+                <button class="resetBtn"
+                onclick="resetBill()">
+                    🗑
+                </button>
+
+                <button class="darkBtn"
+                onclick="toggleDarkMode()">
+                    🌙
+                </button>
+
             </div>
 
         </div>
 
         <p id="dateTime"></p>
-
-    </div>
-
-    <div id="menuBox" class="menuBox">
-
-        <button class="whatsappBtn" onclick="sendWhatsApp()">
-            📤
-        </button>
-
-        <button class="resetBtn" onclick="resetBill()">
-            🗑
-        </button>
 
     </div>
 
@@ -262,8 +243,9 @@ button:hover{
     id="itemName"
     placeholder="Item Name (Optional)">
 
-    <input type="number"
+    <input type="text"
     id="itemQty"
+    inputmode="numeric"
     placeholder="Quantity">
 
     <input type="number"
@@ -288,7 +270,7 @@ button:hover{
 
         <h3>
             Total Cost:
-            ₹<span id="totalCost">0</span>
+            ₹<span id="totalCost">0.00</span>
         </h3>
 
     </div>
@@ -353,19 +335,6 @@ document.addEventListener("keydown",function(e){
     }
 
 });
-
-function toggleMenu(){
-
-    let menu =
-    document.getElementById("menuBox");
-
-    if(menu.style.display==="flex"){
-        menu.style.display="none";
-    }else{
-        menu.style.display="flex";
-    }
-
-}
 
 function addItem(){
 
