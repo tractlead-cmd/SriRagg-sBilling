@@ -42,7 +42,6 @@ body{
     font-family:'Poppins',sans-serif;
     background:#f5f5f5;
     padding:15px;
-    transition:0.3s;
 }
 
 .container{
@@ -52,7 +51,6 @@ body{
     padding:18px;
     border-radius:18px;
     box-shadow:0 0 12px rgba(0,0,0,0.08);
-    transition:0.3s;
 }
 
 /* =========================
@@ -127,10 +125,6 @@ button{
     cursor:pointer;
 }
 
-button:hover{
-    opacity:0.92;
-}
-
 /* =========================
 SUGGESTIONS
 ========================= */
@@ -197,6 +191,19 @@ ITEMS
 
 #itemList{
     margin-top:18px;
+    max-height:320px;
+    overflow-y:auto;
+    padding-right:4px;
+    scrollbar-width:thin;
+}
+
+#itemList::-webkit-scrollbar{
+    width:6px;
+}
+
+#itemList::-webkit-scrollbar-thumb{
+    background:#bbb;
+    border-radius:10px;
 }
 
 .item{
@@ -343,7 +350,7 @@ onclick="resetBill()">
 
 </div>
 
-<!-- EXCEL -->
+<!-- FILE -->
 
 <input type="file"
 id="productFile"
@@ -390,53 +397,33 @@ Add Item
 <div class="totalBox">
 
 <div class="totalLine">
-
 <span>Total Quantity</span>
-
 <span id="totalItems">0</span>
-
 </div>
 
 <div class="totalLine">
-
 <span>Unique Items</span>
-
 <span id="uniqueItems">0</span>
-
 </div>
 
 <div class="totalLine">
-
 <span>MRP Total</span>
-
-<span>
-₹<span id="mrpTotal">0.00</span>
-</span>
-
+<span>₹<span id="mrpTotal">0.00</span></span>
 </div>
 
 <div class="totalLine">
-
 <span>Bill Total</span>
-
-<span>
-₹<span id="billTotal">0.00</span>
-</span>
-
+<span>₹<span id="billTotal">0.00</span></span>
 </div>
 
 <div class="dotted"></div>
 
 <div class="grandTotal">
-
 Grand Total ₹<span id="grandTotal">0.00</span>
-
 </div>
 
 <div class="savings">
-
 Your Savings ₹<span id="savings">0.00</span>
-
 </div>
 
 </div>
@@ -450,13 +437,11 @@ Your Savings ₹<span id="savings">0.00</span>
 <script>
 
 /* =========================
-GLOBAL VARIABLES
+GLOBAL
 ========================= */
 
 let items = [];
-
 let productCatalog = [];
-
 let selectedProduct = null;
 
 let invoiceCounter =
@@ -475,11 +460,11 @@ document.getElementById("itemQty");
 const suggestionsBox =
 document.getElementById("suggestionsBox");
 
-const productFile =
-document.getElementById("productFile");
-
 const categoryFilter =
 document.getElementById("categoryFilter");
+
+const productFile =
+document.getElementById("productFile");
 
 /* =========================
 LOAD SAVED CATALOG
@@ -498,7 +483,7 @@ if(savedCatalog){
 }
 
 /* =========================
-FILE UPLOAD
+UPLOAD FILE
 ========================= */
 
 productFile.addEventListener("change",function(e){
@@ -509,65 +494,37 @@ productFile.addEventListener("change",function(e){
         return;
     }
 
-    let fileName =
-    file.name.toLowerCase();
+    let reader =
+    new FileReader();
 
-    /* CSV */
+    reader.onload = function(event){
 
-    if(fileName.endsWith(".csv")){
+        let data =
+        new Uint8Array(
+            event.target.result
+        );
 
-        let reader =
-        new FileReader();
+        let workbook =
+        XLSX.read(data,{
+            type:"array"
+        });
 
-        reader.onload = function(event){
+        let sheet =
+        workbook.Sheets[
+            workbook.SheetNames[0]
+        ];
 
-            parseCSV(event.target.result);
+        let json =
+        XLSX.utils.sheet_to_json(
+            sheet,
+            {header:1}
+        );
 
-        };
+        parseExcel(json);
 
-        reader.readAsText(file);
+    };
 
-    }
-
-    /* EXCEL */
-
-    else{
-
-        let reader =
-        new FileReader();
-
-        reader.onload = function(event){
-
-            let data =
-            new Uint8Array(
-                event.target.result
-            );
-
-            let workbook =
-            XLSX.read(data,{
-
-                type:"array"
-
-            });
-
-            let sheet =
-            workbook.Sheets[
-                workbook.SheetNames[0]
-            ];
-
-            let json =
-            XLSX.utils.sheet_to_json(
-                sheet,
-                {header:1}
-            );
-
-            parseExcel(json);
-
-        };
-
-        reader.readAsArrayBuffer(file);
-
-    }
+    reader.readAsArrayBuffer(file);
 
 });
 
@@ -635,101 +592,14 @@ function parseExcel(data){
 
     }
 
-    saveCatalog();
+    localStorage.setItem(
+        "productCatalog",
+        JSON.stringify(productCatalog)
+    );
 
     loadCategories();
 
     alert("Excel Loaded Successfully");
-
-}
-
-/* =========================
-PARSE CSV
-========================= */
-
-function parseCSV(csv){
-
-    let lines = csv.split("\n");
-
-    productCatalog = [];
-
-    for(let i=1;i<lines.length;i++){
-
-        let row = lines[i].split(",");
-
-        if(!row || row.length===0){
-            continue;
-        }
-
-        productCatalog.push({
-
-            category:
-            String(row[0] || "").trim(),
-
-            code:
-            String(row[1] || "").trim(),
-
-            brand:
-            String(row[2] || "").trim(),
-
-            internalName:
-            String(row[3] || "").trim(),
-
-            displayName:
-            String(row[4] || "").trim(),
-
-            unit:
-            String(row[5] || "").trim(),
-
-            costPrice:
-            Number(row[6]) || 0,
-
-            mrp:
-            Number(row[7]) || 0,
-
-            salePrice:
-            Number(row[8]) || 0,
-
-            stockQty:
-            Number(row[9]) || 0,
-
-            minimumQty:
-            Number(row[10]) || 0,
-
-            status:
-            String(row[11] || "Active").trim(),
-
-            gst:
-            Number(row[12]) || 0,
-
-            barcode:
-            String(row[13] || "").trim()
-
-        });
-
-    }
-
-    saveCatalog();
-
-    loadCategories();
-
-    alert("CSV Loaded Successfully");
-
-}
-
-/* =========================
-SAVE CATALOG
-========================= */
-
-function saveCatalog(){
-
-    localStorage.setItem(
-
-        "productCatalog",
-
-        JSON.stringify(productCatalog)
-
-    );
 
 }
 
@@ -740,11 +610,9 @@ LOAD CATEGORIES
 function loadCategories(){
 
     categoryFilter.innerHTML =
-
     '<option value="">All Categories</option>';
 
     let categories =
-
     [...new Set(
         productCatalog.map(
             p=>p.category
@@ -797,12 +665,6 @@ itemName.addEventListener("input",function(){
 
         product.code
         .toLowerCase()
-        .includes(search)
-
-        ||
-
-        product.internalName
-        .toLowerCase()
         .includes(search);
 
         let matchesCategory =
@@ -834,13 +696,13 @@ itemName.addEventListener("input",function(){
 
         <br>
 
-        ${product.brand || "-"}
-        | ${product.unit || "-"}
+        ${product.brand}
+        | ${product.unit}
 
         <br>
 
-        MRP ₹${product.mrp || 0}
-        | Sale ₹${product.salePrice || 0}`;
+        MRP ₹${product.mrp}
+        | Sale ₹${product.salePrice}`;
 
         div.onclick = function(){
 
@@ -863,34 +725,6 @@ itemName.addEventListener("input",function(){
 });
 
 /* =========================
-KEYBOARD
-========================= */
-
-itemName.addEventListener("keydown",function(e){
-
-    if(e.key==="Enter"){
-
-        e.preventDefault();
-
-        itemQty.focus();
-
-    }
-
-});
-
-itemQty.addEventListener("keydown",function(e){
-
-    if(e.key==="Enter"){
-
-        e.preventDefault();
-
-        addItem();
-
-    }
-
-});
-
-/* =========================
 ADD ITEM
 ========================= */
 
@@ -898,7 +732,7 @@ function addItem(){
 
     if(!selectedProduct){
 
-        alert("Select product");
+        alert("Select Product");
 
         return;
 
@@ -909,7 +743,7 @@ function addItem(){
 
     if(isNaN(qty) || qty<=0){
 
-        alert("Enter quantity");
+        alert("Enter Quantity");
 
         return;
 
@@ -938,9 +772,6 @@ function addItem(){
     else{
 
         items.push({
-
-            category:
-            selectedProduct.category,
 
             code:
             selectedProduct.code,
@@ -974,14 +805,10 @@ function addItem(){
 
     updateTotals();
 
-    saveBill();
-
     itemName.value="";
     itemQty.value="";
 
     selectedProduct = null;
-
-    itemName.focus();
 
 }
 
@@ -1007,44 +834,41 @@ function displayItems(){
 
         <div class="itemTop">
 
-            <div>
+        <div>
 
-                <div class="itemName">
+        <div class="itemName">
 
-                ${index+1}.
-                ${item.displayName}
+        ${index+1}.
+        ${item.displayName}
 
-                </div>
+        </div>
 
-                <div class="itemSub">
+        <div class="itemSub">
 
-                ${item.brand}
-                | ${item.unit}
+        ${item.brand}
+        | ${item.unit}
 
-                <br>
+        <br>
 
-                Qty:
-                ${item.qty}
+        Qty: ${item.qty}
 
-                <br>
+        <br>
 
-                MRP:
-                ₹${item.mrp}
+        MRP: ₹${item.mrp}
 
-                <br>
+        <br>
 
-                Selling:
-                ₹${item.salePrice}
+        Selling: ₹${item.salePrice}
 
-                </div>
+        </div>
 
-            </div>
+        </div>
 
-            <div class="itemPrice">
+        <div class="itemPrice">
 
-            ₹${item.total.toFixed(2)}
+        ₹${item.total.toFixed(2)}
 
-            </div>
+        </div>
 
         </div>
 
@@ -1102,12 +926,10 @@ function editItem(index){
 
     updateTotals();
 
-    saveBill();
-
 }
 
 /* =========================
-REMOVE ITEM
+DELETE ITEM
 ========================= */
 
 function removeItem(index){
@@ -1118,8 +940,6 @@ function removeItem(index){
 
     updateTotals();
 
-    saveBill();
-
 }
 
 /* =========================
@@ -1129,9 +949,7 @@ TOTALS
 function updateTotals(){
 
     let grandTotal = 0;
-
     let mrpTotal = 0;
-
     let totalQty = 0;
 
     items.forEach(item=>{
@@ -1175,120 +993,6 @@ function updateTotals(){
 }
 
 /* =========================
-SAVE BILL
-========================= */
-
-function saveBill(){
-
-    localStorage.setItem(
-
-        "billingItems",
-
-        JSON.stringify(items)
-
-    );
-
-}
-
-/* =========================
-WHATSAPP
-========================= */
-
-function sendWhatsApp(){
-
-    if(items.length===0){
-
-        alert("No items");
-
-        return;
-
-    }
-
-    let customer =
-    document.getElementById("customerName").value;
-
-    let phone =
-    document.getElementById("customerPhone").value;
-
-    let grandTotal = 0;
-
-    let mrpTotal = 0;
-
-    let message =
-
-`Sri Raghavendra Grocery
-
-Invoice No:
-SRG-${String(invoiceCounter).padStart(4,"0")}
-
-Customer:
-${customer}
-
-`;
-
-    items.forEach((item,index)=>{
-
-        let total =
-        item.qty *
-        item.salePrice;
-
-        grandTotal += total;
-
-        mrpTotal +=
-        item.qty *
-        item.mrp;
-
-        message +=
-
-`${index+1}. ${item.displayName}
-
-Qty:
-${item.qty}
-
-Price:
-₹${item.salePrice}
-
-Total:
-₹${total.toFixed(2)}
-
-`;
-
-    });
-
-    let savings =
-    mrpTotal - grandTotal;
-
-    message +=
-
-`====================
-
-Grand Total Rs.
-${grandTotal.toFixed(2)}
-
-............................
-
-Your Savings Rs.
-${savings.toFixed(2)}
-
-Thank You
-Visit Again`;
-
-    let url =
-
-    `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
-
-    window.open(url,"_blank");
-
-    invoiceCounter++;
-
-    localStorage.setItem(
-        "invoiceCounter",
-        invoiceCounter
-    );
-
-}
-
-/* =========================
 RESET BILL
 ========================= */
 
@@ -1300,7 +1004,56 @@ function resetBill(){
 
     updateTotals();
 
-    saveBill();
+}
+
+/* =========================
+WHATSAPP
+========================= */
+
+function sendWhatsApp(){
+
+    let phone =
+    document.getElementById("customerPhone").value;
+
+    let grandTotal = 0;
+
+    let message =
+`Sri Raghavendra Grocery
+
+`;
+
+    items.forEach((item,index)=>{
+
+        grandTotal += item.total;
+
+        message +=
+
+`${index+1}. ${item.displayName}
+
+Qty: ${item.qty}
+
+Price: ₹${item.salePrice}
+
+Total: ₹${item.total.toFixed(2)}
+
+`;
+
+    });
+
+    message +=
+
+`----------------------
+
+Grand Total Rs.
+${grandTotal.toFixed(2)}
+
+Thank You`;
+
+    let url =
+
+`https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+
+    window.open(url,"_blank");
 
 }
 
@@ -1313,30 +1066,6 @@ function toggleDarkMode(){
     document.body
     .classList
     .toggle("darkMode");
-
-    if(
-
-        document.body
-        .classList
-        .contains("darkMode")
-
-    ){
-
-        localStorage.setItem(
-            "darkMode",
-            "enabled"
-        );
-
-    }
-
-    else{
-
-        localStorage.setItem(
-            "darkMode",
-            "disabled"
-        );
-
-    }
 
 }
 
@@ -1372,42 +1101,9 @@ function updateDateTime(){
 
 }
 
+updateDateTime();
+
 setInterval(updateDateTime,60000);
-
-/* =========================
-LOAD APP
-========================= */
-
-window.onload = function(){
-
-    let savedItems =
-    localStorage.getItem("billingItems");
-
-    if(savedItems){
-
-        items =
-        JSON.parse(savedItems);
-
-        displayItems();
-
-        updateTotals();
-
-    }
-
-    let darkMode =
-    localStorage.getItem("darkMode");
-
-    if(darkMode==="enabled"){
-
-        document.body
-        .classList
-        .add("darkMode");
-
-    }
-
-    updateDateTime();
-
-}
 
 </script>
 
