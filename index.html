@@ -89,7 +89,16 @@ overflow:auto;
 
 body.dark .invoiceBox{background:#222;}
 
-.selected{background:#007bff;color:white;}
+.selected{
+background:#007bff;
+color:white;
+}
+
+.suggestionItem{
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
 
 </style>
 
@@ -113,8 +122,7 @@ Savings: ₹<span id="tSave">0</span>
 
 <button onclick="toggleDark()">Dark Mode</button>
 
-<!-- 🔥 NEW BUTTON -->
-<button onclick="showInvoiceNumber()">Current Invoice Number: <span id="invNoUI"></span></button>
+<button onclick="showInvoiceNo()">Current Invoice: <span id="invUI"></span></button>
 
 <button onclick="saveBill()">Save Bill</button>
 <button onclick="resetBill()">Reset</button>
@@ -172,24 +180,20 @@ let invoiceNo = bills.length ? bills[bills.length-1].invoiceNo + 1 : 1;
 
 let lastBill = null;
 
-/* ================= SHOW INVOICE NUMBER ================= */
-
-function showInvoiceNumber(){
-alert("Current Invoice Number: " + invoiceNo);
-}
-
-/* update UI button */
-function updateInvoiceUI(){
-document.getElementById("invNoUI").innerText = invoiceNo;
-}
-updateInvoiceUI();
-
 /* ================= SAVE ================= */
 
 function saveAll(){
 localStorage.setItem("items", JSON.stringify(items));
 localStorage.setItem("bills", JSON.stringify(bills));
 }
+
+/* ================= SHOW INVOICE NO ================= */
+
+function showInvoiceNo(){
+alert("Current Invoice Number: " + invoiceNo);
+}
+
+document.getElementById("invUI").innerText = invoiceNo;
 
 /* ================= SEARCH ================= */
 
@@ -205,18 +209,18 @@ products.filter(p =>
 (p.code||"").toLowerCase().includes(v)
 ).slice(0,15).forEach(p=>{
 let d = document.createElement("div");
-d.className="item";
+d.className = "suggestionItem";
 d.innerText = p.name;
 d.onclick = ()=>select(p);
 suggestionsBox.appendChild(d);
 });
 };
 
-/* ================= KEYBOARD FIX ================= */
+/* ================= KEYBOARD FIX (WORKING) ================= */
 
 search.onkeydown = e => {
 
-let list = document.querySelectorAll("#suggestionsBox .item");
+let list = document.querySelectorAll(".suggestionItem");
 
 if(list.length === 0) return;
 
@@ -294,10 +298,9 @@ totals();
 saveAll();
 }
 
-/* ================= RENDER ================= */
+/* ================= RENDER ITEMS ================= */
 
 function render(){
-
 list.innerHTML="";
 
 items.forEach((i,idx)=>{
@@ -366,10 +369,11 @@ invoiceNo++;
 items=[];
 saveAll();
 
-updateInvoiceUI();
-renderInvoices();
+document.getElementById("invUI").innerText = invoiceNo;
+
 render();
 totals();
+renderInvoices();
 
 alert("Bill Saved ✔");
 }
@@ -395,15 +399,11 @@ ${b.date}<br>
 });
 }
 
-/* OPEN BILL */
 function openBill(no){
-
 let b = bills.find(x=>x.invoiceNo===no);
-
 if(!b) return;
 
 items = b.items;
-
 render();
 totals();
 }
@@ -432,24 +432,22 @@ Total:₹${b.grand}
 
 function sendWhatsApp(){
 
-let bill = lastBill;
-
-if(!bill){
+if(!lastBill){
 alert("No saved bill");
 return;
 }
 
 let msg="🧾 BILL\n\n";
 
-bill.items.forEach((i,idx)=>{
+lastBill.items.forEach((i,idx)=>{
 msg += `${idx+1}. ${i.name}
 Qty:${i.qty}
 ₹${i.total}\n`;
 });
 
 msg += `
-TOTAL: ₹${bill.grand}
-INVOICE: ${bill.invoiceNo}
+TOTAL: ₹${lastBill.grand}
+INVOICE: ${lastBill.invoiceNo}
 `;
 
 window.open("https://wa.me/?text="+encodeURIComponent(msg));
