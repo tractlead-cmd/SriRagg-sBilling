@@ -724,6 +724,35 @@ itemName.addEventListener("input",function(){
 
 });
 
+
+/* =========================
+KEYBOARD SHORTCUTS
+========================= */
+
+itemName.addEventListener("keydown",function(e){
+
+    if(e.key==="Enter"){
+
+        e.preventDefault();
+
+        itemQty.focus();
+
+    }
+
+});
+
+itemQty.addEventListener("keydown",function(e){
+
+    if(e.key==="Enter"){
+
+        e.preventDefault();
+
+        addItem();
+
+    }
+
+});
+
 /* =========================
 ADD ITEM
 ========================= */
