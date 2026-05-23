@@ -4,8 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SriRagg's Billing App</title>
+<title>SriRagg POS System</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -13,12 +12,17 @@
 
 <style>
 
-/* RESET */
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
     font-family:'Poppins',sans-serif;
     background:#f5f5f5;
+}
+
+/* DARK MODE */
+body.dark{
+    background:#111;
+    color:white;
 }
 
 /* LAYOUT */
@@ -40,13 +44,72 @@ body{
     flex-direction:column;
 }
 
+body.dark .panel{
+    background:#1e1e1e;
+}
+
+/* CENTER BIGGER */
 .centerPanel{flex:1.2;}
 
-/* RIGHT SCROLL */
+/* RIGHT LIST */
 .rightPanel #itemList{
     flex:1;
     overflow-y:auto;
     margin-top:10px;
+}
+
+/* INPUTS */
+input,button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid #ccc;
+}
+
+body.dark input{
+    background:#2a2a2a;
+    color:white;
+    border:1px solid #444;
+}
+
+/* BUTTONS */
+button{
+    background:#007bff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+/* SUGGESTIONS */
+#suggestionsBox{
+    max-height:200px;
+    overflow-y:auto;
+    border:1px solid #ddd;
+    margin-top:5px;
+}
+
+.suggestionItem{
+    padding:10px;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
+}
+
+.selected{
+    background:#007bff;
+    color:white;
+}
+
+/* ITEM */
+.item{
+    background:#f7f7f7;
+    padding:10px;
+    margin-top:10px;
+    border-radius:10px;
+}
+
+body.dark .item{
+    background:#2a2a2a;
 }
 
 /* TOTAL BOX */
@@ -57,58 +120,8 @@ body{
     margin-top:10px;
 }
 
-/* INPUT */
-input,select,button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    font-size:14px;
-}
-
-button{
-    background:#007bff;
-    color:white;
-    border:none;
-    cursor:pointer;
-}
-
-/* SUGGESTIONS */
-#suggestionsBox{
-    background:white;
-    border:1px solid #ddd;
-    max-height:200px;
-    overflow-y:auto;
-    margin-top:5px;
-}
-
-.suggestionItem{
-    padding:10px;
-    border-bottom:1px solid #eee;
-    cursor:pointer;
-}
-
-.suggestionItem:hover{
-    background:#f0f6ff;
-}
-
-/* ITEM */
-.item{
-    background:#fafafa;
-    padding:10px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #eee;
-}
-
-.item button{
-    width:48%;
-    margin-top:8px;
-}
-
-h3{
-    margin-bottom:10px;
+body.dark .totalBox{
+    background:#2a2a2a;
 }
 
 </style>
@@ -121,13 +134,20 @@ h3{
 <!-- LEFT -->
 <div class="panel">
 
-<h3>Total</h3>
+<h3>Summary</h3>
 
 <div class="totalBox">
 <div>Total Qty: <span id="totalItems">0</span></div>
 <div>MRP: ₹<span id="mrpTotal">0</span></div>
 <div>Bill: ₹<span id="billTotal">0</span></div>
+<div>Savings: ₹<span id="savings">0</span></div>
 </div>
+
+<br>
+
+<button onclick="toggleDark()">🌙 Dark Mode</button>
+<button onclick="resetBill()">🗑 Reset</button>
+<button onclick="sendWhatsApp()">📤 WhatsApp</button>
 
 </div>
 
@@ -136,9 +156,9 @@ h3{
 
 <h3>Billing</h3>
 
-<input type="file" id="productFile" accept=".xlsx,.xls,.csv">
+<input type="file" id="productFile">
 
-<input type="text" id="itemName" placeholder="Search Product">
+<input type="text" id="itemName" placeholder="Search product">
 <div id="suggestionsBox"></div>
 
 <input type="number" id="itemQty" placeholder="Quantity">
@@ -148,10 +168,9 @@ h3{
 </div>
 
 <!-- RIGHT -->
-<div class="panel rightPanel">
+<div class="panel">
 
 <h3>Items</h3>
-
 <div id="itemList"></div>
 
 </div>
@@ -164,206 +183,238 @@ h3{
 let productCatalog = [];
 let items = [];
 let selectedProduct = null;
+let currentIndex = -1;
 
 /* ELEMENTS */
 const itemName = document.getElementById("itemName");
 const itemQty = document.getElementById("itemQty");
-const suggestionsBox = document.getElementById("suggestionsBox");
-const productFile = document.getElementById("productFile");
+const box = document.getElementById("suggestionsBox");
 
-/* EXCEL UPLOAD */
-productFile.addEventListener("change", function(e){
+/* LOAD DARK MODE */
+if(localStorage.getItem("dark")==="1"){
+    document.body.classList.add("dark");
+}
+
+/* EXCEL */
+document.getElementById("productFile").addEventListener("change", function(e){
 
     let file = e.target.files[0];
-    if(!file) return;
-
     let reader = new FileReader();
 
-    reader.onload = function(event){
+    reader.onload = function(ev){
 
-        let data = new Uint8Array(event.target.result);
-
-        let workbook = XLSX.read(data, {type:"array"});
-
-        let sheet = workbook.Sheets[workbook.SheetNames[0]];
-
+        let data = new Uint8Array(ev.target.result);
+        let wb = XLSX.read(data, {type:"array"});
+        let sheet = wb.Sheets[wb.SheetNames[0]];
         let json = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-        parseExcel(json);
+        productCatalog = [];
+
+        for(let i=1;i<json.length;i++){
+
+            let r = json[i];
+            if(!r) continue;
+
+            productCatalog.push({
+                displayName: r[4],
+                code: r[1],
+                brand: r[2],
+                unit: r[5],
+                mrp: Number(r[7])||0,
+                sale: Number(r[8])||0
+            });
+        }
+
+        alert("Loaded");
     };
 
     reader.readAsArrayBuffer(file);
 });
 
-/* PARSE EXCEL */
-function parseExcel(data){
-
-    productCatalog = [];
-
-    for(let i=1;i<data.length;i++){
-
-        let row = data[i];
-        if(!row || row.length===0) continue;
-
-        productCatalog.push({
-
-            category: (row[0] || "").trim(),
-            code: (row[1] || "").trim(),
-            brand: (row[2] || "").trim(),
-            internalName: (row[3] || "").trim(),
-            displayName: (row[4] || "").trim(),
-            unit: (row[5] || "").trim(),
-
-            costPrice: Number(row[6]) || 0,
-            mrp: Number(row[7]) || 0,
-            salePrice: Number(row[8]) || 0,
-
-            stockQty: Number(row[9]) || 0,
-            minQty: Number(row[10]) || 0,
-            status: (row[11] || "").trim(),
-            gst: Number(row[12]) || 0,
-            barcode: (row[13] || "").trim()
-        });
-    }
-
-    alert("Excel Loaded Successfully");
-}
-
 /* SEARCH */
 itemName.addEventListener("input", function(){
 
-    let search = itemName.value.toLowerCase();
-    suggestionsBox.innerHTML = "";
+    let val = itemName.value.toLowerCase();
+    box.innerHTML="";
+    currentIndex = -1;
 
-    if(search === "") return;
+    if(!val) return;
 
     let filtered = productCatalog.filter(p =>
-        (p.displayName || "").toLowerCase().includes(search) ||
-        (p.code || "").toLowerCase().includes(search)
+        (p.displayName||"").toLowerCase().includes(val) ||
+        (p.code||"").toLowerCase().includes(val)
     );
 
-    filtered.slice(0,20).forEach(product => {
+    filtered.slice(0,15).forEach((p,i)=>{
 
         let div = document.createElement("div");
-        div.className = "suggestionItem";
+        div.className="suggestionItem";
 
-        div.innerHTML = `
-            <b>${product.displayName}</b><br>
-            ${product.brand} | ${product.unit}<br>
-            MRP ₹${product.mrp} | Sale ₹${product.salePrice}
-        `;
+        div.innerHTML = p.displayName;
 
-        div.onclick = () => {
-            selectedProduct = product;
-            itemName.value = product.displayName;
-            suggestionsBox.innerHTML = "";
-        };
+        div.onclick = ()=>selectProduct(p);
 
-        suggestionsBox.appendChild(div);
+        box.appendChild(div);
     });
 });
 
-/* ADD ITEM */
+/* KEY NAVIGATION */
+itemName.addEventListener("keydown", function(e){
+
+    let items = document.querySelectorAll(".suggestionItem");
+
+    if(e.key==="ArrowDown"){
+        e.preventDefault();
+        currentIndex++;
+        highlight(items);
+    }
+
+    if(e.key==="ArrowUp"){
+        e.preventDefault();
+        currentIndex--;
+        highlight(items);
+    }
+
+    if(e.key==="Enter"){
+        e.preventDefault();
+
+        if(currentIndex>=0 && items[currentIndex]){
+            items[currentIndex].click();
+        } else {
+            itemQty.focus();
+        }
+    }
+});
+
+function highlight(items){
+    items.forEach(i=>i.classList.remove("selected"));
+
+    if(items[currentIndex]){
+        items[currentIndex].classList.add("selected");
+        items[currentIndex].scrollIntoView({block:"nearest"});
+    }
+}
+
+/* SELECT */
+function selectProduct(p){
+    selectedProduct = p;
+    itemName.value = p.displayName;
+    box.innerHTML="";
+    itemQty.focus();
+}
+
+/* ADD */
+itemQty.addEventListener("keydown", function(e){
+    if(e.key==="Enter"){
+        addItem();
+    }
+});
+
 function addItem(){
 
-    if(!selectedProduct){
-        alert("Select Product");
-        return;
-    }
+    if(!selectedProduct) return alert("Select product");
 
-    let qty = parseFloat(itemQty.value);
-
-    if(!qty || qty <= 0){
-        alert("Enter quantity");
-        return;
-    }
+    let qty = Number(itemQty.value);
+    if(!qty) return alert("Qty needed");
 
     items.push({
-        name: selectedProduct.displayName,
-        qty: qty,
-        mrp: selectedProduct.mrp,
-        sale: selectedProduct.salePrice,
-        total: qty * selectedProduct.salePrice
+        name:selectedProduct.displayName,
+        qty,
+        mrp:selectedProduct.mrp,
+        sale:selectedProduct.sale,
+        total:qty*selectedProduct.sale
     });
 
-    selectedProduct = null;
-    itemName.value = "";
-    itemQty.value = "";
+    itemName.value="";
+    itemQty.value="";
+    selectedProduct=null;
 
     render();
     totals();
+
+    itemName.focus(); // RETURN TO SEARCH
 }
 
 /* RENDER */
 function render(){
 
-    let list = document.getElementById("itemList");
-    list.innerHTML = "";
+    let list=document.getElementById("itemList");
+    list.innerHTML="";
 
-    items.forEach((i, index)=>{
+    items.forEach((i,idx)=>{
 
-        let div = document.createElement("div");
-        div.className = "item";
+        let div=document.createElement("div");
+        div.className="item";
 
-        div.innerHTML = `
-            <b>${index+1}. ${i.name}</b><br>
-            Qty: ${i.qty} | ₹${i.sale}<br>
-            Total: ₹${i.total.toFixed(2)}<br>
+        div.innerHTML=`
+        <b>${i.name}</b><br>
+        Qty: ${i.qty}<br>
+        ₹${i.total.toFixed(2)}<br>
 
-            <button onclick="editItem(${index})" style="background:#ffc107;color:black;">
-                Edit
-            </button>
-
-            <button onclick="deleteItem(${index})" style="background:#dc3545;">
-                Delete
-            </button>
+        <button onclick="edit(${idx})" style="background:#ffc107;color:black;">Edit</button>
+        <button onclick="del(${idx})" style="background:red;">Delete</button>
         `;
 
         list.appendChild(div);
     });
 }
 
-/* DELETE */
-function deleteItem(index){
-    items.splice(index,1);
-    render();
-    totals();
-}
-
 /* EDIT */
-function editItem(index){
-
-    let item = items[index];
-
+function edit(i){
+    let item = items[i];
     itemName.value = item.name;
     itemQty.value = item.qty;
+    selectedProduct = productCatalog.find(p=>p.displayName===item.name);
+    items.splice(i,1);
+    render(); totals();
+    itemName.focus();
+}
 
-    selectedProduct = productCatalog.find(
-        p => p.displayName === item.name
-    );
-
-    items.splice(index,1);
-
-    render();
-    totals();
+/* DELETE */
+function del(i){
+    items.splice(i,1);
+    render(); totals();
 }
 
 /* TOTALS */
 function totals(){
 
-    let mrpTotal = 0;
-    let billTotal = 0;
-    let qtyTotal = 0;
+    let mrp=0, bill=0, qty=0;
 
     items.forEach(i=>{
-        mrpTotal += i.mrp * i.qty;
-        billTotal += i.total;
-        qtyTotal += i.qty;
+        mrp += i.mrp*i.qty;
+        bill += i.total;
+        qty += i.qty;
     });
 
-    document.getElementById("mrpTotal").innerText = mrpTotal.toFixed(2);
-    document.getElementById("billTotal").innerText = billTotal.toFixed(2);
-    document.getElementById("totalItems").innerText = qtyTotal;
+    document.getElementById("mrpTotal").innerText=mrp.toFixed(2);
+    document.getElementById("billTotal").innerText=bill.toFixed(2);
+    document.getElementById("totalItems").innerText=qty;
+    document.getElementById("savings").innerText=(mrp-bill).toFixed(2);
+}
+
+/* RESET */
+function resetBill(){
+    items=[];
+    render(); totals();
+}
+
+/* DARK MODE */
+function toggleDark(){
+    document.body.classList.toggle("dark");
+    localStorage.setItem("dark",document.body.classList.contains("dark")?1:0);
+}
+
+/* WHATSAPP */
+function sendWhatsApp(){
+
+    let msg="Bill Summary:\n";
+
+    items.forEach(i=>{
+        msg += `${i.name} x ${i.qty} = ₹${i.total}\n`;
+    });
+
+    window.open("https://wa.me/?text="+encodeURIComponent(msg));
 }
 
 </script>
