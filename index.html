@@ -69,7 +69,6 @@ border:none;
 cursor:pointer;
 }
 
-/* suggestions */
 #suggestionsBox{
 border:1px solid #ddd;
 max-height:200px;
@@ -84,7 +83,6 @@ cursor:pointer;
 
 .selected{background:#007bff;color:white;}
 
-/* item */
 .item{
 background:#f7f7f7;
 padding:10px;
@@ -94,9 +92,9 @@ border-radius:10px;
 
 body.dark .item{background:#2a2a2a;}
 
-/* dashboard circle */
 .circleWrap{
 display:flex;
+flex-direction:column;
 justify-content:center;
 align-items:center;
 margin-top:15px;
@@ -114,8 +112,6 @@ color:white;
 font-weight:600;
 text-align:center;
 }
-
-.circle small{font-size:12px;}
 
 </style>
 
@@ -138,13 +134,22 @@ Savings: ₹<span id="tSave">0</span>
 </div>
 
 <button onclick="toggleDark()">Dark Mode</button>
+<button onclick="saveBill()">Save Bill</button>
 <button onclick="resetBill()">Reset</button>
 <button onclick="sendWhatsApp()">WhatsApp</button>
 
 <div class="circleWrap">
+
 <div class="circle" id="circle" style="background:#ddd;">
 No Sales
 </div>
+
+<!-- 🔥 INVOICE SEARCH -->
+<input type="text" id="invSearch" placeholder="Search Invoice No">
+<button onclick="searchInvoice()">Search Invoice</button>
+
+<div id="invoiceResult"></div>
+
 </div>
 
 <button onclick="downloadExcel()">Download Excel</button>
@@ -177,29 +182,44 @@ No Sales
 
 <script>
 
-let products=[];
-let items=[];
-let selected=null;
-let index=-1;
+/* ===================== DATA ===================== */
 
-/* DARK */
+let products = [];
+let items = JSON.parse(localStorage.getItem("items")) || [];
+let bills = JSON.parse(localStorage.getItem("bills")) || [];
+
+let selected = null;
+let index = -1;
+
+let invoiceNo = bills.length ? bills[bills.length-1].invoiceNo + 1 : 1;
+
+/* ===================== SAVE ===================== */
+
+function saveAll(){
+localStorage.setItem("items", JSON.stringify(items));
+localStorage.setItem("bills", JSON.stringify(bills));
+}
+
+/* ===================== LOAD DARK ===================== */
+
 if(localStorage.getItem("dark")==="1")
 document.body.classList.add("dark");
 
-/* EXCEL */
-file.onchange=e=>{
-let reader=new FileReader();
+/* ===================== EXCEL ===================== */
 
-reader.onload=ev=>{
-let data=new Uint8Array(ev.target.result);
-let wb=XLSX.read(data,{type:"array"});
-let sh=wb.Sheets[wb.SheetNames[0]];
-let json=XLSX.utils.sheet_to_json(sh,{header:1});
+file.onchange = e => {
+let reader = new FileReader();
 
-products=[];
+reader.onload = ev => {
+let data = new Uint8Array(ev.target.result);
+let wb = XLSX.read(data,{type:"array"});
+let sh = wb.Sheets[wb.SheetNames[0]];
+let json = XLSX.utils.sheet_to_json(sh,{header:1});
+
+products = [];
 
 for(let i=1;i<json.length;i++){
-let r=json[i];
+let r = json[i];
 if(!r) continue;
 
 products.push({
@@ -218,19 +238,20 @@ alert("Excel Loaded");
 reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* SEARCH */
-search.oninput=e=>{
-let v=e.target.value.toLowerCase();
-suggestionsBox.innerHTML="";
-index=-1;
+/* ===================== SEARCH ===================== */
+
+search.oninput = e => {
+let v = e.target.value.toLowerCase();
+suggestionsBox.innerHTML = "";
+index = -1;
 
 if(!v) return;
 
-products.filter(p=>
-(p.name||"").toLowerCase().includes(v)||
+products.filter(p =>
+(p.name||"").toLowerCase().includes(v) ||
 (p.code||"").toLowerCase().includes(v)
 ).slice(0,15).forEach(p=>{
-let d=document.createElement("div");
+let d = document.createElement("div");
 d.className="suggestionItem";
 d.innerText=p.name;
 d.onclick=()=>select(p);
@@ -238,71 +259,29 @@ suggestionsBox.appendChild(d);
 });
 };
 
-/* ARROW + ENTER */
-search.onkeydown=e=>{
-let s=document.querySelectorAll(".suggestionItem");
+/* ===================== SELECT ===================== */
 
-if(e.key==="ArrowDown"){index++;hl(s);}
-if(e.key==="ArrowUp"){index--;hl(s);}
-
-if(e.key==="Enter"){
-e.preventDefault();
-if(s[index]) s[index].click();
-else qty.focus();
-}
-};
-
-function hl(s){
-s.forEach(i=>i.classList.remove("selected"));
-if(s[index]){
-s[index].classList.add("selected");
-s[index].scrollIntoView({block:"nearest"});
-}
-}
-
-/* SELECT */
 function select(p){
-selected=p;
-search.value=p.name;
-suggestionsBox.innerHTML="";
+selected = p;
+search.value = p.name;
+suggestionsBox.innerHTML = "";
 qty.focus();
 }
 
-/* QTY ENTER FIX */
-qty.onkeydown=e=>{
-if(e.key==="Enter"){
-e.preventDefault();
-addItem();
-}
-};
+/* ===================== ADD ITEM ===================== */
 
-/* PARSE QTY */
-function parseQty(v){
-v=(v||"").toLowerCase();
-let n=parseFloat(v);
-if(isNaN(n)) return 0;
-
-if(v.includes("kg")) return n*1000;
-if(v.includes("g")) return n;
-if(v.includes("ltr")) return n*1000;
-if(v.includes("ml")) return n;
-
-return n;
-}
-
-/* ADD ITEM */
 function addItem(){
 
 if(!selected) return alert("Select product");
 
-let q=parseQty(qty.value);
+let q = parseFloat(qty.value);
 if(!q) return alert("Invalid qty");
 
-let ex=items.find(i=>i.code===selected.code);
+let ex = items.find(i=>i.code===selected.code);
 
 if(ex){
-ex.qty+=q;
-ex.total=ex.qty*ex.sale;
+ex.qty += q;
+ex.total = ex.qty * selected.sale;
 }else{
 items.push({
 code:selected.code,
@@ -315,7 +294,7 @@ total:q*selected.sale
 });
 }
 
-selected=null;
+selected = null;
 search.value="";
 qty.value="";
 suggestionsBox.innerHTML="";
@@ -324,71 +303,70 @@ render();
 totals();
 dashboard();
 
-search.focus();
+saveAll();
 }
 
-/* RENDER */
+/* ===================== RENDER ===================== */
+
 function render(){
 
 list.innerHTML="";
 
 items.forEach((i,idx)=>{
-
-let d=document.createElement("div");
-d.className="item";
-
-d.innerHTML=`
+list.innerHTML += `
+<div class="item">
 <b>${i.name}</b><br>
 Qty: ${i.qty}<br>
 ₹${i.total.toFixed(2)}<br>
 
 <button onclick="edit(${idx})" style="background:#ffc107;color:black;">Edit</button>
 <button onclick="del(${idx})" style="background:red;">Delete</button>
-`;
-
-list.appendChild(d);
+</div>`;
 });
-
 }
 
-/* EDIT */
+/* ===================== EDIT ===================== */
+
 function edit(i){
-let it=items[i];
+let it = items[i];
 
-search.value=it.name;
-qty.value=it.qty;
+search.value = it.name;
+qty.value = it.qty;
 
-selected=products.find(p=>p.code===it.code);
+selected = products.find(p=>p.code===it.code);
 
 items.splice(i,1);
 
-render();totals();dashboard();
+render();totals();dashboard();saveAll();
 }
 
-/* DELETE */
+/* ===================== DELETE ===================== */
+
 function del(i){
 items.splice(i,1);
-render();totals();dashboard();
+render();totals();dashboard();saveAll();
 }
 
-/* TOTALS */
+/* ===================== TOTALS ===================== */
+
 function totals(){
 
 let m=0,b=0,q=0;
 
 items.forEach(i=>{
-m+=i.mrp*i.qty;
-b+=i.total;
-q+=i.qty;
+m += i.mrp*i.qty;
+b += i.total;
+q += i.qty;
 });
 
-tQty.innerText=q;
-tMrp.innerText=m.toFixed(2);
-tBill.innerText=b.toFixed(2);
-tSave.innerText=(m-b).toFixed(2);
+tQty.innerText = q;
+tMrp.innerText = m.toFixed(2);
+tBill.innerText = b.toFixed(2);
+tSave.innerText = (m-b).toFixed(2);
 }
 
-/* 🍰 REAL PIE CHART */
+/* ===================== DASHBOARD ===================== */
+
 function dashboard(){
 
 let map={};
@@ -398,7 +376,7 @@ let c=i.cat||"Other";
 map[c]=(map[c]||0)+i.total;
 });
 
-let total=Object.values(map).reduce((a,b)=>a+b,0);
+let total = Object.values(map).reduce((a,b)=>a+b,0);
 
 if(total===0){
 circle.style.background="#ddd";
@@ -423,66 +401,129 @@ start=end;
 i++;
 }
 
-circle.style.background=`conic-gradient(${grad.join(",")})`;
-circle.innerHTML=`<small>Total Sales</small><b>₹${total.toFixed(0)}</b>`;
+circle.style.background = `conic-gradient(${grad.join(",")})`;
+circle.innerHTML = `<small>Total Sales</small><b>₹${total.toFixed(0)}</b>`;
 }
 
-/* RESET */
+/* ===================== SAVE BILL ===================== */
+
+function saveBill(){
+
+if(items.length===0){
+alert("No items");
+return;
+}
+
+let mrpTotal=0;
+let grand=0;
+
+items.forEach(i=>{
+mrpTotal += i.mrp*i.qty;
+grand += i.total;
+});
+
+bills.push({
+invoiceNo,
+date:new Date().toLocaleString(),
+items:[...items],
+mrpTotal,
+grand,
+savings:mrpTotal-grand
+});
+
+invoiceNo++;
+
+items=[];
+saveAll();
+
+render();
+totals();
+dashboard();
+
+alert("Bill Saved");
+}
+
+/* ===================== SEARCH INVOICE ===================== */
+
+function searchInvoice(){
+
+let no = parseInt(invSearch.value);
+
+let bill = bills.find(b=>b.invoiceNo===no);
+
+if(!bill){
+invoiceResult.innerHTML="❌ Not Found";
+return;
+}
+
+let html = `
+<b>Invoice #${bill.invoiceNo}</b><br>
+Date: ${bill.date}<br>
+MRP: ₹${bill.mrpTotal.toFixed(2)}<br>
+Bill: ₹${bill.grand.toFixed(2)}<br>
+Savings: ₹${bill.savings.toFixed(2)}<br><br>
+
+<b>Items:</b><br>
+`;
+
+bill.items.forEach(i=>{
+html += `${i.name} - Qty:${i.qty} - ₹${i.total.toFixed(2)}<br>`;
+});
+
+invoiceResult.innerHTML = html;
+}
+
+/* ===================== RESET ===================== */
+
 function resetBill(){
 items=[];
+saveAll();
 render();totals();dashboard();
 }
 
-/* DARK */
+/* ===================== DARK MODE ===================== */
+
 function toggleDark(){
 document.body.classList.toggle("dark");
-localStorage.setItem("dark",document.body.classList.contains("dark")?1:0);
+localStorage.setItem("dark",
+document.body.classList.contains("dark")?1:0);
 }
 
-/* WHATSAPP */
+/* ===================== WHATSAPP ===================== */
+
 function sendWhatsApp(){
 
-    if(items.length === 0){
-        alert("No items in bill");
-        return;
-    }
-
-    let msg = "🧾 *BILL RECEIPT*\n\n";
-
-    let grand = 0;
-    let mrpTotal = 0;
-
-    items.forEach((i, idx)=>{
-
-        let lineMRP = i.mrp * i.qty;
-        mrpTotal += lineMRP;
-        grand += i.total;
-
-        msg +=
-`${idx+1}. ${i.name}
-Qty: ${i.qty}
-MRP: ₹${i.mrp} | Sale: ₹${i.sale}
-Line Total: ₹${i.total.toFixed(2)}
---------------------------
-`;
-    });
-
-    let savings = mrpTotal - grand;
-
-    msg +=
-`
-========================
-💰 GRAND TOTAL: ₹${grand.toFixed(2)}
-💡 SAVINGS: ₹${savings.toFixed(2)}
-
-🙏 THANK YOU FOR SHOPPING WITH US
-PLEASE VISIT AGAIN
-`;
-
-    window.open("https://wa.me/?text=" + encodeURIComponent(msg));
+if(items.length===0){
+alert("No items in bill");
+return;
 }
 
-/* DOWNLOAD */
+let msg="🧾 *BILL RECEIPT*\n\n";
+
+let grand=0;
+let mrpTotal=0;
+
+items.forEach((i,idx)=>{
+mrpTotal += i.mrp*i.qty;
+grand += i.total;
+
+msg += `${idx+1}. ${i.name}
+Qty:${i.qty}
+MRP:₹${i.mrp} Sale:₹${i.sale}
+Total:₹${i.total.toFixed(2)}
+-------------------\n`;
+});
+
+msg += `
+GRAND: ₹${grand.toFixed(2)}
+SAVE: ₹${(mrpTotal-grand).toFixed(2)}
+`;
+
+window.open("https://wa.me/?text="+encodeURIComponent(msg));
+}
+
+/* ===================== EXCEL EXPORT ===================== */
+
 function downloadExcel(){
 
 let data=[["Name","Category","Qty","Total"]];
