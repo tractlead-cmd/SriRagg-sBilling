@@ -724,10 +724,24 @@ function updateHighlight(){
 
     if(currentSuggestionIndex >= 0){
 
+        let activeItem =
+
         suggestionItems[
             currentSuggestionIndex
-        ].style.background =
+        ];
+
+        activeItem.style.background =
         "#dfefff";
+
+        /* AUTO SCROLL */
+
+        activeItem.scrollIntoView({
+
+            block:"nearest",
+
+            behavior:"smooth"
+
+        });
 
     }
 
