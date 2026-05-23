@@ -441,11 +441,45 @@ localStorage.setItem("dark",document.body.classList.contains("dark")?1:0);
 
 /* WHATSAPP */
 function sendWhatsApp(){
-let msg="Bill:\n";
-items.forEach(i=>{
-msg+=`${i.name} x ${i.qty} = ₹${i.total}\n`;
-});
-window.open("https://wa.me/?text="+encodeURIComponent(msg));
+
+    if(items.length === 0){
+        alert("No items in bill");
+        return;
+    }
+
+    let msg = "🧾 *BILL RECEIPT*\n\n";
+
+    let grand = 0;
+    let mrpTotal = 0;
+
+    items.forEach((i, idx)=>{
+
+        let lineMRP = i.mrp * i.qty;
+        mrpTotal += lineMRP;
+        grand += i.total;
+
+        msg +=
+`${idx+1}. ${i.name}
+Qty: ${i.qty}
+MRP: ₹${i.mrp} | Sale: ₹${i.sale}
+Line Total: ₹${i.total.toFixed(2)}
+--------------------------
+`;
+    });
+
+    let savings = mrpTotal - grand;
+
+    msg +=
+`
+========================
+💰 GRAND TOTAL: ₹${grand.toFixed(2)}
+💡 SAVINGS: ₹${savings.toFixed(2)}
+
+🙏 THANK YOU FOR SHOPPING WITH US
+PLEASE VISIT AGAIN
+`;
+
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg));
 }
 
 /* DOWNLOAD */
