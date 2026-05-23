@@ -89,15 +89,15 @@ overflow:auto;
 
 body.dark .invoiceBox{background:#222;}
 
-.selected{
-background:#007bff;
-color:white;
-}
-
 .suggestionItem{
 padding:10px;
 border-bottom:1px solid #eee;
 cursor:pointer;
+}
+
+.selected{
+background:#007bff;
+color:white;
 }
 
 </style>
@@ -122,7 +122,7 @@ Savings: ₹<span id="tSave">0</span>
 
 <button onclick="toggleDark()">Dark Mode</button>
 
-<button onclick="showInvoiceNo()">Current Invoice: <span id="invUI"></span></button>
+<button onclick="showInvoice()">Current Invoice: <span id="invUI"></span></button>
 
 <button onclick="saveBill()">Save Bill</button>
 <button onclick="resetBill()">Reset</button>
@@ -180,6 +180,10 @@ let invoiceNo = bills.length ? bills[bills.length-1].invoiceNo + 1 : 1;
 
 let lastBill = null;
 
+/* ================= INIT UI ================= */
+
+document.getElementById("invUI").innerText = invoiceNo;
+
 /* ================= SAVE ================= */
 
 function saveAll(){
@@ -187,17 +191,45 @@ localStorage.setItem("items", JSON.stringify(items));
 localStorage.setItem("bills", JSON.stringify(bills));
 }
 
-/* ================= SHOW INVOICE NO ================= */
+/* ================= EXCEL LOAD ================= */
 
-function showInvoiceNo(){
-alert("Current Invoice Number: " + invoiceNo);
+file.onchange = e => {
+
+let reader = new FileReader();
+
+reader.onload = ev => {
+
+let data = new Uint8Array(ev.target.result);
+let wb = XLSX.read(data,{type:"array"});
+let sh = wb.Sheets[wb.SheetNames[0]];
+let json = XLSX.utils.sheet_to_json(sh,{header:1});
+
+products = [];
+
+for(let i=1;i<json.length;i++){
+let r=json[i];
+if(!r) continue;
+
+products.push({
+code:r[1],
+name:r[4],
+cat:r[0],
+mrp:+r[7]||0,
+sale:+r[8]||0,
+unit:r[5]
+});
 }
 
-document.getElementById("invUI").innerText = invoiceNo;
+alert("Excel Loaded");
+};
+
+reader.readAsArrayBuffer(e.target.files[0]);
+};
 
 /* ================= SEARCH ================= */
 
 search.oninput = e => {
+
 let v = e.target.value.toLowerCase();
 suggestionsBox.innerHTML = "";
 index = -1;
@@ -208,15 +240,17 @@ products.filter(p =>
 (p.name||"").toLowerCase().includes(v) ||
 (p.code||"").toLowerCase().includes(v)
 ).slice(0,15).forEach(p=>{
+
 let d = document.createElement("div");
 d.className = "suggestionItem";
 d.innerText = p.name;
 d.onclick = ()=>select(p);
+
 suggestionsBox.appendChild(d);
 });
 };
 
-/* ================= KEYBOARD FIX (WORKING) ================= */
+/* ================= KEYBOARD FIX ================= */
 
 search.onkeydown = e => {
 
@@ -224,22 +258,23 @@ let list = document.querySelectorAll(".suggestionItem");
 
 if(list.length === 0) return;
 
-if(e.key === "ArrowDown"){
+if(e.key==="ArrowDown"){
 e.preventDefault();
 index++;
 if(index >= list.length) index = 0;
 highlight(list);
 }
 
-if(e.key === "ArrowUp"){
+if(e.key==="ArrowUp"){
 e.preventDefault();
 index--;
-if(index < 0) index = list.length - 1;
+if(index < 0) index = list.length-1;
 highlight(list);
 }
 
-if(e.key === "Enter"){
+if(e.key==="Enter"){
 e.preventDefault();
+
 if(list[index]) list[index].click();
 else qty.focus();
 }
@@ -298,9 +333,10 @@ totals();
 saveAll();
 }
 
-/* ================= RENDER ITEMS ================= */
+/* ================= RENDER ================= */
 
 function render(){
+
 list.innerHTML="";
 
 items.forEach((i,idx)=>{
