@@ -2,39 +2,21 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SriRagg's Billing App</title>
 
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
-rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
     font-family:'Poppins',sans-serif;
     background:#f5f5f5;
     padding:15px;
-    transition:0.3s;
 }
 
 .container{
@@ -44,10 +26,7 @@ body{
     padding:18px;
     border-radius:18px;
     box-shadow:0 0 12px rgba(0,0,0,0.08);
-    transition:0.3s;
 }
-
-/* HEADER */
 
 .header{
     display:flex;
@@ -56,261 +35,63 @@ body{
     margin-bottom:15px;
 }
 
-.logo{
-    font-size:24px;
-    font-weight:600;
-}
-
-#dateTime{
-    font-size:12px;
-    color:#666;
-    margin-top:3px;
-}
-
-.topButtons{
-    display:flex;
-    gap:8px;
-}
+.logo{font-size:22px;font-weight:600;}
 
 .iconBtn{
     width:42px;
     height:42px;
     border:none;
     border-radius:10px;
-    color:white;
-    font-size:18px;
     cursor:pointer;
 }
 
-.whatsappBtn{
-    background:#25D366;
-}
-
-.darkBtn{
-    background:#222;
-}
-
-.resetBtn{
-    background:#dc3545;
-}
-
-/* INPUTS */
-
-input,
-select,
-button{
+input,select,button{
     width:100%;
     padding:12px;
     margin-top:10px;
     border-radius:10px;
     border:1px solid #ccc;
-    font-size:15px;
-    font-family:'Poppins',sans-serif;
+    font-size:14px;
 }
 
 button{
     background:#007bff;
     color:white;
     border:none;
-    cursor:pointer;
 }
-
-/* SUGGESTIONS */
 
 #suggestionsBox{
     background:white;
     border:1px solid #ddd;
-    border-radius:10px;
-    max-height:220px;
+    max-height:200px;
     overflow-y:auto;
-    margin-top:5px;
 }
 
 .suggestionItem{
-    padding:12px;
+    padding:10px;
     border-bottom:1px solid #eee;
     cursor:pointer;
-    transition:0.2s;
 }
 
 .suggestionItem:hover{
-    background:#f2f7ff;
+    background:#f0f6ff;
 }
-
-/* TOTAL BOX */
 
 .totalBox{
     margin-top:15px;
     background:#f7f7f7;
-    padding:15px;
-    border-radius:14px;
-}
-
-.totalLine{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:10px;
-}
-
-.dotted{
-    border-bottom:2px dashed #999;
-    margin:12px 0;
-}
-
-.grandTotal{
-    font-size:28px;
-    font-weight:700;
-    text-align:right;
-}
-
-.savings{
-    text-align:right;
-    color:green;
-    font-weight:600;
-    margin-top:8px;
-}
-
-/* ITEM LIST */
-
-#itemList{
-    margin-top:18px;
-    max-height:320px;
-    overflow-y:auto;
-    padding-right:4px;
-}
-
-#itemList::-webkit-scrollbar{
-    width:6px;
-}
-
-#itemList::-webkit-scrollbar-thumb{
-    background:#bbb;
-    border-radius:10px;
+    padding:12px;
+    border-radius:12px;
 }
 
 .item{
     background:#fafafa;
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:12px;
-    margin-bottom:10px;
-}
-
-.itemTop{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-}
-
-.itemName{
-    font-size:15px;
-    font-weight:600;
-}
-
-.itemSub{
-    font-size:12px;
-    color:#666;
-    margin-top:4px;
-    line-height:1.6;
-}
-
-.itemPrice{
-    font-size:18px;
-    font-weight:600;
-}
-
-.itemButtons{
-    display:flex;
-    gap:8px;
+    padding:10px;
     margin-top:10px;
+    border-radius:10px;
+    border:1px solid #eee;
 }
-
-.editBtn{
-    background:#ffc107;
-    color:black;
-}
-
-.deleteBtn{
-    background:#dc3545;
-}
-
-.itemButtons button{
-    flex:1;
-    padding:8px;
-    font-size:13px;
-}
-
-/* DARK MODE */
-
-.darkMode{
-    background:#111;
-    color:white;
-}
-
-.darkMode .container{
-    background:#1e1e1e;
-}
-
-.darkMode input,
-.darkMode select{
-    background:#2b2b2b;
-    color:white;
-    border:1px solid #444;
-}
-
-.darkMode input::placeholder{
-    color:#bbb;
-}
-
-.darkMode #dateTime{
-    color:#bbb;
-}
-
-.darkMode #suggestionsBox{
-    background:#2b2b2b;
-    border:1px solid #444;
-}
-
-.darkMode .suggestionItem{
-    border-bottom:1px solid #444;
-    color:white;
-}
-
-.darkMode .suggestionItem:hover{
-    background:#3a3a3a;
-}
-
-.darkMode .totalBox{
-    background:#2b2b2b;
-}
-
-.darkMode .item{
-    background:#2b2b2b;
-    border:1px solid #444;
-}
-
-.darkMode .itemSub{
-    color:#ccc;
-}
-
-.darkMode .dotted{
-    border-bottom:2px dashed #666;
-}
-
-/* SELECTED ITEM */
-
-.selectedSuggestion{
-    background:#007bff !important;
-    color:white !important;
-}
-
-.darkMode .selectedSuggestion{
-    background:#3399ff !important;
-    color:white !important;
-}
-
 </style>
-
 </head>
 
 <body>
@@ -318,104 +99,22 @@ button{
 <div class="container">
 
 <div class="header">
-
-<div>
-
-<div class="logo">
-SriRagg's
+<div class="logo">SriRagg Billing</div>
 </div>
 
-<div id="dateTime"></div>
+<input type="file" id="productFile" accept=".xlsx,.xls,.csv">
 
-</div>
-
-<div class="topButtons">
-
-<button class="iconBtn whatsappBtn"
-onclick="sendWhatsApp()">
-📤
-</button>
-
-<button class="iconBtn darkBtn"
-onclick="toggleDarkMode()">
-🌙
-</button>
-
-<button class="iconBtn resetBtn"
-onclick="resetBill()">
-🗑
-</button>
-
-</div>
-
-</div>
-
-<input type="file"
-id="productFile"
-accept=".xlsx,.xls,.csv">
-
-<input type="text"
-id="customerName"
-placeholder="Customer Name">
-
-<input type="number"
-id="customerPhone"
-placeholder="WhatsApp Number">
-
-<select id="categoryFilter">
-
-<option value="">
-All Categories
-</option>
-
-</select>
-
-<input type="text"
-id="itemName"
-placeholder="Search Product">
-
+<input type="text" id="itemName" placeholder="Search Product">
 <div id="suggestionsBox"></div>
 
-<input type="number"
-id="itemQty"
-placeholder="Quantity">
+<input type="number" id="itemQty" placeholder="Quantity">
 
-<button onclick="addItem()">
-Add Item
-</button>
+<button onclick="addItem()">Add Item</button>
 
 <div class="totalBox">
-
-<div class="totalLine">
-<span>Total Quantity</span>
-<span id="totalItems">0</span>
-</div>
-
-<div class="totalLine">
-<span>Unique Items</span>
-<span id="uniqueItems">0</span>
-</div>
-
-<div class="totalLine">
-<span>MRP Total</span>
-<span>₹<span id="mrpTotal">0.00</span></span>
-</div>
-
-<div class="totalLine">
-<span>Bill Total</span>
-<span>₹<span id="billTotal">0.00</span></span>
-</div>
-
-<div class="dotted"></div>
-
-<div class="grandTotal">
-₹<span id="grandTotal">0.00</span>
-</div>
-
-<div class="savings">
-You Saved ₹<span id="savings">0.00</span>
-</div>
-
+<div>Total Qty: <span id="totalItems">0</span></div>
+<div>MRP Total: ₹<span id="mrpTotal">0</span></div>
+<div>Bill Total: ₹<span id="billTotal">0</span></div>
 </div>
 
 <div id="itemList"></div>
@@ -424,76 +123,40 @@ You Saved ₹<span id="savings">0.00</span>
 
 <script>
 
-/* GLOBAL */
-
-let items = [];
 let productCatalog = [];
+let items = [];
 let selectedProduct = null;
-let currentSuggestionIndex = -1;
 
-/* ELEMENTS */
+const itemName = document.getElementById("itemName");
+const itemQty = document.getElementById("itemQty");
+const suggestionsBox = document.getElementById("suggestionsBox");
+const productFile = document.getElementById("productFile");
 
-const itemName =
-document.getElementById("itemName");
-
-const itemQty =
-document.getElementById("itemQty");
-
-const suggestionsBox =
-document.getElementById("suggestionsBox");
-
-const categoryFilter =
-document.getElementById("categoryFilter");
-
-const productFile =
-document.getElementById("productFile");
-
-/* EXCEL */
-
-productFile.addEventListener("change",function(e){
+/* ===== EXCEL UPLOAD ===== */
+productFile.addEventListener("change", function(e){
 
     let file = e.target.files[0];
+    if(!file) return;
 
-    if(!file){
-        return;
-    }
-
-    let reader =
-    new FileReader();
+    let reader = new FileReader();
 
     reader.onload = function(event){
 
-        let data =
-        new Uint8Array(
-            event.target.result
-        );
+        let data = new Uint8Array(event.target.result);
 
-        let workbook =
-        XLSX.read(data,{
-            type:"array"
-        });
+        let workbook = XLSX.read(data, {type:"array"});
 
-        let sheet =
-        workbook.Sheets[
-            workbook.SheetNames[0]
-        ];
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        let json =
-        XLSX.utils.sheet_to_json(
-            sheet,
-            {header:1}
-        );
+        let json = XLSX.utils.sheet_to_json(sheet, {header:1});
 
         parseExcel(json);
-
     };
 
     reader.readAsArrayBuffer(file);
-
 });
 
-/* PARSE */
-
+/* ===== PARSE EXCEL (MATCH YOUR FORMAT) ===== */
 function parseExcel(data){
 
     productCatalog = [];
@@ -501,513 +164,138 @@ function parseExcel(data){
     for(let i=1;i<data.length;i++){
 
         let row = data[i];
-
-        if(!row || row.length===0){
-            continue;
-        }
+        if(!row || row.length===0) continue;
 
         productCatalog.push({
 
-            category:
-            String(row[0] || "").trim(),
+            category: (row[0] || "").trim(),
+            code: (row[1] || "").trim(),
+            brand: (row[2] || "").trim(),
+            internalName: (row[3] || "").trim(),
+            displayName: (row[4] || "").trim(),
+            unit: (row[5] || "").trim(),
 
-            code:
-            String(row[1] || "").trim(),
+            costPrice: Number(row[6]) || 0,
+            mrp: Number(row[7]) || 0,
+            salePrice: Number(row[8]) || 0,
 
-            brand:
-            String(row[2] || "").trim(),
-
-            displayName:
-            String(row[4] || "").trim(),
-
-            unit:
-            String(row[5] || "").trim(),
-
-            mrp:
-            Number(row[7]) || 0,
-
-            salePrice:
-            Number(row[8]) || 0
-
+            stockQty: Number(row[9]) || 0,
+            minQty: Number(row[10]) || 0,
+            status: (row[11] || "").trim(),
+            gst: Number(row[12]) || 0,
+            barcode: (row[13] || "").trim()
         });
-
     }
-
-    loadCategories();
 
     alert("Excel Loaded Successfully");
-
 }
 
-/* CATEGORIES */
+/* ===== SEARCH ===== */
+itemName.addEventListener("input", function(){
 
-function loadCategories(){
-
-    categoryFilter.innerHTML =
-    '<option value="">All Categories</option>';
-
-    let categories =
-    [...new Set(
-        productCatalog.map(
-            p=>p.category
-        )
-    )];
-
-    categories.forEach(category=>{
-
-        let option =
-        document.createElement("option");
-
-        option.value = category;
-
-        option.innerText = category;
-
-        categoryFilter.appendChild(option);
-
-    });
-
-}
-
-/* SEARCH */
-
-itemName.addEventListener("input",function(){
-
-    let search =
-    itemName.value.toLowerCase();
-
-    let selectedCategory =
-    categoryFilter.value;
-
+    let search = itemName.value.toLowerCase();
     suggestionsBox.innerHTML = "";
 
-    currentSuggestionIndex = -1;
+    if(search === "") return;
 
-    if(search===""){
-        return;
-    }
+    let filtered = productCatalog.filter(p => {
 
-    let filtered =
-    productCatalog.filter(product=>{
-
-        let matchesSearch =
-
-        product.displayName
-        .toLowerCase()
-        .includes(search)
-
-        ||
-
-        product.code
-        .toLowerCase()
-        .includes(search);
-
-        let matchesCategory =
-
-        selectedCategory === ""
-
-        ||
-
-        product.category ===
-        selectedCategory;
-
-        return matchesSearch &&
-        matchesCategory;
-
+        return (
+            (p.displayName || "").toLowerCase().includes(search) ||
+            (p.code || "").toLowerCase().includes(search)
+        );
     });
 
-    filtered.slice(0,20)
-    .forEach((product,index)=>{
+    filtered.slice(0,20).forEach(product => {
 
-        let div =
-        document.createElement("div");
+        let div = document.createElement("div");
+        div.className = "suggestionItem";
 
-        div.className =
-        "suggestionItem";
+        div.innerHTML = `
+            <b>${product.displayName}</b><br>
+            ${product.brand} | ${product.unit}<br>
+            MRP ₹${product.mrp} | Sale ₹${product.salePrice}
+        `;
 
-        div.innerHTML =
-
-        `<strong>${product.displayName}</strong>
-
-        <br>
-
-        ${product.brand}
-        | ${product.unit}
-
-        <br>
-
-        MRP ₹${product.mrp}
-        | Sale ₹${product.salePrice}`;
-
-        div.onclick = function(){
-
-            selectSuggestion(product);
-
+        div.onclick = () => {
+            selectedProduct = product;
+            itemName.value = product.displayName;
+            suggestionsBox.innerHTML = "";
         };
 
         suggestionsBox.appendChild(div);
-
     });
-
 });
 
-/* ARROW NAVIGATION */
-
-itemName.addEventListener("keydown",function(e){
-
-    let suggestionItems =
-    document.querySelectorAll(".suggestionItem");
-
-    if(e.key==="ArrowDown"){
-
-        e.preventDefault();
-
-        if(
-            currentSuggestionIndex <
-            suggestionItems.length - 1
-        ){
-
-            currentSuggestionIndex++;
-
-            updateHighlight();
-
-        }
-
-    }
-
-    else if(e.key==="ArrowUp"){
-
-        e.preventDefault();
-
-        if(currentSuggestionIndex > 0){
-
-            currentSuggestionIndex--;
-
-            updateHighlight();
-
-        }
-
-    }
-
-    else if(e.key==="Enter"){
-
-        e.preventDefault();
-
-        if(currentSuggestionIndex >= 0){
-
-            suggestionItems[
-                currentSuggestionIndex
-            ].click();
-
-        }
-
-        else{
-
-            itemQty.focus();
-
-        }
-
-    }
-
-});
-
-/* HIGHLIGHT */
-
-function updateHighlight(){
-
-    let suggestionItems =
-    document.querySelectorAll(".suggestionItem");
-
-    suggestionItems.forEach(item=>{
-
-        item.classList.remove(
-            "selectedSuggestion"
-        );
-
-    });
-
-    if(currentSuggestionIndex >= 0){
-
-        let activeItem =
-
-        suggestionItems[
-            currentSuggestionIndex
-        ];
-
-        activeItem.classList.add(
-            "selectedSuggestion"
-        );
-
-        activeItem.scrollIntoView({
-
-            block:"nearest"
-
-        });
-
-    }
-
-}
-
-/* SELECT */
-
-function selectSuggestion(product){
-
-    selectedProduct = product;
-
-    itemName.value =
-    product.displayName;
-
-    suggestionsBox.innerHTML = "";
-
-    currentSuggestionIndex = -1;
-
-    itemQty.focus();
-
-}
-
-/* ENTER QTY */
-
-itemQty.addEventListener("keydown",function(e){
-
-    if(e.key==="Enter"){
-
-        e.preventDefault();
-
-        addItem();
-
-    }
-
-});
-
-/* ADD */
-
+/* ===== ADD ITEM ===== */
 function addItem(){
 
     if(!selectedProduct){
-
         alert("Select Product");
-
         return;
-
     }
 
-    let qty =
-    parseFloat(itemQty.value);
+    let qty = parseFloat(itemQty.value);
 
-    if(isNaN(qty) || qty<=0){
-
-        alert("Enter Quantity");
-
+    if(!qty || qty <= 0){
+        alert("Enter quantity");
         return;
-
     }
 
     items.push({
-
-        displayName:
-        selectedProduct.displayName,
-
-        brand:
-        selectedProduct.brand,
-
-        unit:
-        selectedProduct.unit,
-
-        qty:qty,
-
-        mrp:
-        selectedProduct.mrp,
-
-        salePrice:
-        selectedProduct.salePrice,
-
-        total:
-        qty *
-        selectedProduct.salePrice
-
+        name: selectedProduct.displayName,
+        qty: qty,
+        mrp: selectedProduct.mrp,
+        sale: selectedProduct.salePrice,
+        total: qty * selectedProduct.salePrice
     });
 
-    displayItems();
-
-    updateTotals();
-
+    selectedProduct = null;
     itemName.value = "";
     itemQty.value = "";
-    suggestionsBox.innerHTML = "";
 
-    selectedProduct = null;
-
-    itemName.focus();
-
+    render();
+    totals();
 }
 
-/* DISPLAY */
+/* ===== RENDER ===== */
+function render(){
 
-function displayItems(){
+    let list = document.getElementById("itemList");
+    list.innerHTML = "";
 
-    let itemList =
-    document.getElementById("itemList");
+    items.forEach((i, index)=>{
 
-    itemList.innerHTML = "";
-
-    items.forEach((item,index)=>{
-
-        let div =
-        document.createElement("div");
-
+        let div = document.createElement("div");
         div.className = "item";
 
         div.innerHTML = `
-
-        <div class="itemTop">
-
-        <div>
-
-        <div class="itemName">
-
-        ${index+1}.
-        ${item.displayName}
-
-        </div>
-
-        <div class="itemSub">
-
-        ${item.brand}
-        | ${item.unit}
-
-        <br>
-
-        Qty: ${item.qty}
-
-        <br>
-
-        MRP: ₹${item.mrp}
-
-        <br>
-
-        Selling: ₹${item.salePrice}
-
-        </div>
-
-        </div>
-
-        <div class="itemPrice">
-
-        ₹${item.total.toFixed(2)}
-
-        </div>
-
-        </div>
-
+            ${index+1}. ${i.name}<br>
+            Qty: ${i.qty} | ₹${i.sale}<br>
+            Total: ₹${i.total.toFixed(2)}
         `;
 
-        itemList.appendChild(div);
-
+        list.appendChild(div);
     });
-
 }
 
-/* TOTALS */
+/* ===== TOTALS ===== */
+function totals(){
 
-function updateTotals(){
-
-    let grandTotal = 0;
     let mrpTotal = 0;
-    let totalQty = 0;
+    let billTotal = 0;
+    let qtyTotal = 0;
 
-    items.forEach(item=>{
-
-        grandTotal += item.total;
-
-        mrpTotal +=
-        item.mrp * item.qty;
-
-        totalQty += item.qty;
-
+    items.forEach(i=>{
+        mrpTotal += i.mrp * i.qty;
+        billTotal += i.total;
+        qtyTotal += i.qty;
     });
 
-    let savings =
-    mrpTotal - grandTotal;
-
-    document.getElementById("grandTotal")
-    .innerText =
-    grandTotal.toFixed(2);
-
-    document.getElementById("billTotal")
-    .innerText =
-    grandTotal.toFixed(2);
-
-    document.getElementById("mrpTotal")
-    .innerText =
-    mrpTotal.toFixed(2);
-
-    document.getElementById("savings")
-    .innerText =
-    savings.toFixed(2);
-
-    document.getElementById("totalItems")
-    .innerText =
-    totalQty;
-
-    document.getElementById("uniqueItems")
-    .innerText =
-    items.length;
-
+    document.getElementById("mrpTotal").innerText = mrpTotal.toFixed(2);
+    document.getElementById("billTotal").innerText = billTotal.toFixed(2);
+    document.getElementById("totalItems").innerText = qtyTotal;
 }
-
-/* RESET */
-
-function resetBill(){
-
-    items = [];
-
-    displayItems();
-
-    updateTotals();
-
-}
-
-/* DARK MODE */
-
-function toggleDarkMode(){
-
-    document.body
-    .classList
-    .toggle("darkMode");
-
-}
-
-/* WHATSAPP */
-
-function sendWhatsApp(){
-
-    alert("WhatsApp Ready");
-
-}
-
-/* DATE */
-
-function updateDateTime(){
-
-    let now = new Date();
-
-    document.getElementById("dateTime")
-    .innerText =
-
-    now.toLocaleString("en-IN",{
-
-        weekday:"short",
-        day:"2-digit",
-        month:"short",
-        hour:"numeric",
-        minute:"2-digit"
-
-    });
-
-}
-
-updateDateTime();
-
-setInterval(updateDateTime,60000);
 
 </script>
 
