@@ -10,7 +10,7 @@ content="width=device-width, initial-scale=1.0">
 
 <title>SriRagg's Billing App</title>
 
-<!-- POPPINS FONT -->
+<!-- FONT -->
 
 <link rel="preconnect"
 href="https://fonts.googleapis.com">
@@ -22,63 +22,63 @@ crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
 rel="stylesheet">
 
-<!-- EXCEL SUPPORT -->
+<!-- XLSX -->
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
 body{
     font-family:'Poppins',sans-serif;
     background:#f5f5f5;
-    padding:20px;
+    padding:15px;
     transition:0.3s;
 }
 
 .container{
-    max-width:420px;
+    max-width:430px;
     margin:auto;
     background:white;
-    padding:20px;
-    border-radius:14px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-    transition:0.3s;
+    padding:18px;
+    border-radius:18px;
+    box-shadow:0 0 12px rgba(0,0,0,0.08);
 }
 
-.headerTop{
+.header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:15px;
 }
 
-.titleRow{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.headerTop h2{
-    margin:0;
-    font-size:22px;
+.logo{
+    font-size:24px;
+    font-weight:600;
 }
 
 #dateTime{
-    font-size:13px;
+    font-size:12px;
     color:gray;
 }
 
-.menuButtons{
+.topButtons{
     display:flex;
     gap:8px;
 }
 
-.whatsappBtn,
-.resetBtn,
-.darkBtn{
-    width:auto;
-    padding:8px 12px;
-    margin-top:0;
+.iconBtn{
+    border:none;
+    color:white;
+    width:42px;
+    height:42px;
+    border-radius:10px;
+    cursor:pointer;
     font-size:18px;
 }
 
@@ -86,22 +86,22 @@ body{
     background:#25D366;
 }
 
-.resetBtn{
-    background:#dc3545;
-}
-
 .darkBtn{
     background:#222;
 }
 
+.resetBtn{
+    background:#dc3545;
+}
+
 input,
+select,
 button{
     width:100%;
     padding:12px;
     margin-top:10px;
-    border-radius:8px;
+    border-radius:10px;
     border:1px solid #ccc;
-    box-sizing:border-box;
     font-size:15px;
 }
 
@@ -113,72 +113,115 @@ button{
 }
 
 button:hover{
-    opacity:0.9;
+    opacity:0.92;
+}
+
+#suggestionsBox{
+    background:white;
+    border:1px solid #ddd;
+    border-radius:10px;
+    max-height:220px;
+    overflow-y:auto;
+    margin-top:5px;
+}
+
+.suggestionItem{
+    padding:12px;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
+}
+
+.suggestionItem:hover{
+    background:#f0f0f0;
 }
 
 .totalBox{
     margin-top:15px;
-    margin-bottom:15px;
-    padding:12px;
-    background:#f0f0f0;
-    border-radius:10px;
+    padding:15px;
+    border-radius:14px;
+    background:#f4f4f4;
 }
 
-.totalBox h3{
-    margin:5px 0;
+.totalLine{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
     font-size:15px;
 }
 
+.grandTotal{
+    font-size:26px;
+    font-weight:700;
+    text-align:right;
+    margin-top:15px;
+}
+
+.savings{
+    text-align:right;
+    color:green;
+    font-weight:600;
+    margin-top:8px;
+}
+
+.dotted{
+    border-bottom:2px dashed #000;
+    margin-top:12px;
+    margin-bottom:12px;
+}
+
 #itemList{
-    max-height:300px;
-    overflow-y:auto;
+    margin-top:18px;
 }
 
 .item{
+    background:#fafafa;
+    padding:12px;
+    border-radius:12px;
+    margin-bottom:10px;
+    border:1px solid #eee;
+}
+
+.itemTop{
     display:flex;
     justify-content:space-between;
-    padding:10px 0;
-    border-bottom:1px solid #eee;
-    font-size:14px;
+    gap:10px;
+}
+
+.itemName{
+    font-weight:600;
+    font-size:15px;
+}
+
+.itemSub{
+    font-size:12px;
+    color:gray;
+    margin-top:4px;
+}
+
+.itemPrice{
+    font-weight:600;
+    font-size:18px;
 }
 
 .itemButtons{
     display:flex;
-    flex-direction:column;
-    gap:5px;
-    margin-top:5px;
+    gap:8px;
+    margin-top:10px;
 }
 
 .editBtn{
     background:#ffc107;
     color:black;
-    padding:5px 10px;
-    font-size:12px;
 }
 
 .deleteBtn{
     background:#dc3545;
-    color:white;
-    padding:5px 10px;
-    font-size:12px;
 }
 
-#suggestionsBox{
-    background:white;
-    border:1px solid #ccc;
-    border-radius:8px;
-    max-height:220px;
-    overflow-y:auto;
-}
-
-.suggestionItem{
-    padding:10px;
-    cursor:pointer;
-    border-bottom:1px solid #eee;
-}
-
-.suggestionItem:hover{
-    background:#f0f0f0;
+.itemButtons button{
+    flex:1;
+    padding:8px;
+    font-size:13px;
 }
 
 .darkMode{
@@ -190,19 +233,15 @@ button:hover{
     background:#1e1e1e;
 }
 
-.darkMode input{
+.darkMode input,
+.darkMode select{
     background:#333;
     color:white;
     border:1px solid #555;
 }
 
-.darkMode .totalBox{
-    background:#333;
-}
-
 .darkMode #suggestionsBox{
     background:#333;
-    color:white;
     border:1px solid #555;
 }
 
@@ -214,8 +253,21 @@ button:hover{
     background:#444;
 }
 
+.darkMode .totalBox{
+    background:#333;
+}
+
+.darkMode .item{
+    background:#2b2b2b;
+    border:1px solid #444;
+}
+
+.darkMode .itemSub{
+    color:#bbb;
+}
+
 .darkMode #dateTime{
-    color:#ccc;
+    color:#bbb;
 }
 
 </style>
@@ -226,94 +278,140 @@ button:hover{
 
 <div class="container">
 
-    <div class="headerTop">
+<div class="header">
 
-        <div class="titleRow">
+<div>
 
-            <h2>SriRagg's</h2>
+<div class="logo">
+SriRagg's
+</div>
 
-            <div class="menuButtons">
+<div id="dateTime"></div>
 
-                <button class="whatsappBtn"
-                onclick="sendWhatsApp()">
-                    📤
-                </button>
+</div>
 
-                <button class="resetBtn"
-                onclick="resetBill()">
-                    🗑
-                </button>
+<div class="topButtons">
 
-                <button class="darkBtn"
-                onclick="toggleDarkMode()">
-                    🌙
-                </button>
+<button class="iconBtn whatsappBtn"
+onclick="sendWhatsApp()">
+📤
+</button>
 
-            </div>
+<button class="iconBtn darkBtn"
+onclick="toggleDarkMode()">
+🌙
+</button>
 
-        </div>
+<button class="iconBtn resetBtn"
+onclick="resetBill()">
+🗑
+</button>
 
-        <p id="dateTime"></p>
+</div>
 
-    </div>
+</div>
 
-    <!-- CSV / EXCEL -->
+<!-- FILE -->
 
-    <input type="file"
-    id="productFile"
-    accept=".csv,.xlsx,.xls">
+<input type="file"
+id="productFile"
+accept=".csv,.xlsx,.xls">
 
-    <!-- CUSTOMER -->
+<!-- CUSTOMER -->
 
-    <input type="text"
-    id="customerName"
-    placeholder="Customer Name">
+<input type="text"
+id="customerName"
+placeholder="Customer Name">
 
-    <input type="number"
-    id="customerPhone"
-    placeholder="WhatsApp Number">
+<input type="number"
+id="customerPhone"
+placeholder="WhatsApp Number">
 
-    <!-- PRODUCT -->
+<!-- CATEGORY -->
 
-    <input type="text"
-    id="itemName"
-    placeholder="Search Product">
+<select id="categoryFilter">
 
-    <div id="suggestionsBox"></div>
+<option value="">
+All Categories
+</option>
 
-    <input type="text"
-    id="itemQty"
-    inputmode="numeric"
-    placeholder="Quantity">
+</select>
 
-    <button onclick="addItem()">
-        Add Item
-    </button>
+<!-- PRODUCT -->
 
-    <!-- TOTALS -->
+<input type="text"
+id="itemName"
+placeholder="Search Product">
 
-    <div class="totalBox">
+<div id="suggestionsBox"></div>
 
-        <h3>
-            Total Quantity:
-            <span id="totalItems">0</span>
-        </h3>
+<input type="number"
+id="itemQty"
+placeholder="Quantity">
 
-        <h3>
-            Unique Items:
-            <span id="uniqueItems">0</span>
-        </h3>
+<button onclick="addItem()">
+Add Item
+</button>
 
-        <h3>
-            Grand Total:
-            ₹<span id="totalCost">0.00</span>
-        </h3>
+<!-- TOTALS -->
 
-    </div>
+<div class="totalBox">
 
-    <!-- ITEMS -->
+<div class="totalLine">
 
-    <div id="itemList"></div>
+<span>Total Quantity</span>
+
+<span id="totalItems">0</span>
+
+</div>
+
+<div class="totalLine">
+
+<span>Unique Items</span>
+
+<span id="uniqueItems">0</span>
+
+</div>
+
+<div class="totalLine">
+
+<span>MRP Total</span>
+
+<span>
+₹<span id="mrpTotal">0.00</span>
+</span>
+
+</div>
+
+<div class="totalLine">
+
+<span>Bill Total</span>
+
+<span>
+₹<span id="billTotal">0.00</span>
+</span>
+
+</div>
+
+<div class="dotted"></div>
+
+<div class="grandTotal">
+
+Grand Total ₹<span id="grandTotal">0.00</span>
+
+</div>
+
+<div class="savings">
+
+Your Savings ₹<span id="savings">0.00</span>
+
+</div>
+
+</div>
+
+<!-- ITEMS -->
+
+<div id="itemList"></div>
 
 </div>
 
@@ -348,6 +446,9 @@ document.getElementById("suggestionsBox");
 const productFile =
 document.getElementById("productFile");
 
+const categoryFilter =
+document.getElementById("categoryFilter");
+
 /* =========================
 LOAD SAVED CATALOG
 ========================= */
@@ -359,6 +460,8 @@ if(savedCatalog){
 
     productCatalog =
     JSON.parse(savedCatalog);
+
+    loadCategories();
 
 }
 
@@ -377,8 +480,6 @@ productFile.addEventListener("change",function(e){
     let fileName =
     file.name.toLowerCase();
 
-    /* CSV */
-
     if(fileName.endsWith(".csv")){
 
         let reader =
@@ -386,9 +487,7 @@ productFile.addEventListener("change",function(e){
 
         reader.onload = function(event){
 
-            parseCSV(
-                event.target.result
-            );
+            parseCSV(event.target.result);
 
         };
 
@@ -396,17 +495,7 @@ productFile.addEventListener("change",function(e){
 
     }
 
-    /* EXCEL */
-
-    else if(
-
-        fileName.endsWith(".xlsx")
-
-        ||
-
-        fileName.endsWith(".xls")
-
-    ){
+    else{
 
         let reader =
         new FileReader();
@@ -425,18 +514,18 @@ productFile.addEventListener("change",function(e){
 
             });
 
-            let firstSheet =
+            let sheet =
             workbook.Sheets[
                 workbook.SheetNames[0]
             ];
 
-            let jsonData =
+            let json =
             XLSX.utils.sheet_to_json(
-                firstSheet,
+                sheet,
                 {header:1}
             );
 
-            parseExcel(jsonData);
+            parseExcel(json);
 
         };
 
@@ -447,7 +536,7 @@ productFile.addEventListener("change",function(e){
 });
 
 /* =========================
-CSV PARSER
+PARSE CSV
 ========================= */
 
 function parseCSV(csv){
@@ -462,21 +551,29 @@ function parseCSV(csv){
         let row =
         lines[i].split(",");
 
-        if(row.length >= 6){
+        if(row.length >= 10){
 
             productCatalog.push({
 
-                code:row[0].trim(),
+                category:row[0].trim(),
 
-                internalName:row[1].trim(),
+                code:row[1].trim(),
 
-                displayName:row[2].trim(),
+                brand:row[2].trim(),
 
-                unit:row[3].trim(),
+                internalName:row[3].trim(),
 
-                mrp:parseFloat(row[4]),
+                displayName:row[4].trim(),
 
-                salePrice:parseFloat(row[5])
+                unit:row[5].trim(),
+
+                mrp:parseFloat(row[6]),
+
+                salePrice:parseFloat(row[7]),
+
+                stockQty:parseFloat(row[8]) || 0,
+
+                gst:parseFloat(row[9]) || 0
 
             });
 
@@ -486,14 +583,14 @@ function parseCSV(csv){
 
     saveCatalog();
 
-    alert(
-    "CSV Loaded Successfully"
-    );
+    loadCategories();
+
+    alert("CSV Loaded");
 
 }
 
 /* =========================
-EXCEL PARSER
+PARSE EXCEL
 ========================= */
 
 function parseExcel(data){
@@ -504,21 +601,29 @@ function parseExcel(data){
 
         let row = data[i];
 
-        if(row.length >= 6){
+        if(row.length >= 10){
 
             productCatalog.push({
 
-                code:String(row[0]).trim(),
+                category:String(row[0]).trim(),
 
-                internalName:String(row[1]).trim(),
+                code:String(row[1]).trim(),
 
-                displayName:String(row[2]).trim(),
+                brand:String(row[2]).trim(),
 
-                unit:String(row[3]).trim(),
+                internalName:String(row[3]).trim(),
 
-                mrp:parseFloat(row[4]),
+                displayName:String(row[4]).trim(),
 
-                salePrice:parseFloat(row[5])
+                unit:String(row[5]).trim(),
+
+                mrp:parseFloat(row[6]),
+
+                salePrice:parseFloat(row[7]),
+
+                stockQty:parseFloat(row[8]) || 0,
+
+                gst:parseFloat(row[9]) || 0
 
             });
 
@@ -528,9 +633,9 @@ function parseExcel(data){
 
     saveCatalog();
 
-    alert(
-    "Excel Loaded Successfully"
-    );
+    loadCategories();
+
+    alert("Excel Loaded");
 
 }
 
@@ -551,6 +656,39 @@ function saveCatalog(){
 }
 
 /* =========================
+LOAD CATEGORIES
+========================= */
+
+function loadCategories(){
+
+    categoryFilter.innerHTML =
+
+    '<option value="">All Categories</option>';
+
+    let categories =
+
+    [...new Set(
+        productCatalog.map(
+            p=>p.category
+        )
+    )];
+
+    categories.forEach(category=>{
+
+        let option =
+        document.createElement("option");
+
+        option.value = category;
+
+        option.innerText = category;
+
+        categoryFilter.appendChild(option);
+
+    });
+
+}
+
+/* =========================
 AUTOCOMPLETE
 ========================= */
 
@@ -559,6 +697,9 @@ itemName.addEventListener("input",function(){
     let search =
     itemName.value.toLowerCase();
 
+    let selectedCategory =
+    categoryFilter.value;
+
     suggestionsBox.innerHTML="";
 
     if(search===""){
@@ -566,7 +707,9 @@ itemName.addEventListener("input",function(){
     }
 
     let filtered =
-    productCatalog.filter(product =>
+    productCatalog.filter(product=>{
+
+        let matchesSearch =
 
         product.displayName
         .toLowerCase()
@@ -582,12 +725,24 @@ itemName.addEventListener("input",function(){
 
         product.internalName
         .toLowerCase()
-        .includes(search)
+        .includes(search);
 
-    );
+        let matchesCategory =
+
+        selectedCategory === ""
+
+        ||
+
+        product.category ===
+        selectedCategory;
+
+        return matchesSearch &&
+        matchesCategory;
+
+    });
 
     filtered.slice(0,20)
-    .forEach(product => {
+    .forEach(product=>{
 
         let div =
         document.createElement("div");
@@ -597,19 +752,17 @@ itemName.addEventListener("input",function(){
 
         div.innerHTML =
 
-        "<strong>" +
+        `<strong>${product.displayName}</strong>
 
-        product.displayName +
+        <br>
 
-        "</strong><br>" +
+        ${product.brand}
+        | ${product.unit}
 
-        "MRP ₹" +
+        <br>
 
-        product.mrp +
-
-        " | Sale ₹" +
-
-        product.salePrice;
+        MRP ₹${product.mrp}
+        | Sale ₹${product.salePrice}`;
 
         div.onclick = function(){
 
@@ -625,15 +778,14 @@ itemName.addEventListener("input",function(){
 
         };
 
-        suggestionsBox
-        .appendChild(div);
+        suggestionsBox.appendChild(div);
 
     });
 
 });
 
 /* =========================
-KEYBOARD SHORTCUTS
+KEYBOARD
 ========================= */
 
 itemName.addEventListener("keydown",function(e){
@@ -668,9 +820,7 @@ function addItem(){
 
     if(!selectedProduct){
 
-        alert(
-        "Please select product from list"
-        );
+        alert("Select product");
 
         return;
 
@@ -679,7 +829,7 @@ function addItem(){
     let qty =
     parseFloat(itemQty.value);
 
-    if(isNaN(qty)){
+    if(isNaN(qty) || qty<=0){
 
         alert("Enter quantity");
 
@@ -687,12 +837,8 @@ function addItem(){
 
     }
 
-    let total =
-    qty *
-    selectedProduct.salePrice;
-
     let existingItem =
-    items.find(item =>
+    items.find(item=>
 
         item.code ===
         selectedProduct.code
@@ -715,10 +861,20 @@ function addItem(){
 
         items.push({
 
-            code:selectedProduct.code,
+            category:
+            selectedProduct.category,
+
+            code:
+            selectedProduct.code,
+
+            brand:
+            selectedProduct.brand,
 
             displayName:
             selectedProduct.displayName,
+
+            unit:
+            selectedProduct.unit,
 
             mrp:
             selectedProduct.mrp,
@@ -728,7 +884,9 @@ function addItem(){
 
             qty:qty,
 
-            total:total
+            total:
+            qty *
+            selectedProduct.salePrice
 
         });
 
@@ -769,30 +927,48 @@ function displayItems(){
 
         div.innerHTML = `
 
-        <div>
+        <div class="itemTop">
 
-        <strong>
-        ${index+1}. ${item.displayName}
-        </strong>
+            <div>
 
-        <br>
+                <div class="itemName">
 
-        MRP: ₹${item.mrp}
+                ${index+1}.
+                ${item.displayName}
 
-        <br>
+                </div>
 
-        Qty: ${item.qty}
+                <div class="itemSub">
 
-        <br>
+                ${item.brand}
+                | ${item.unit}
 
-        Selling Price:
-        ₹${item.salePrice}
+                <br>
+
+                Qty:
+                ${item.qty}
+
+                <br>
+
+                MRP:
+                ₹${item.mrp}
+
+                <br>
+
+                Selling:
+                ₹${item.salePrice}
+
+                </div>
+
+            </div>
+
+            <div class="itemPrice">
+
+            ₹${item.total.toFixed(2)}
+
+            </div>
 
         </div>
-
-        <div style="text-align:right;">
-
-        ₹${item.total.toFixed(2)}
 
         <div class="itemButtons">
 
@@ -809,8 +985,6 @@ function displayItems(){
         Delete
 
         </button>
-
-        </div>
 
         </div>
 
@@ -837,9 +1011,10 @@ function editItem(index){
     item.qty;
 
     selectedProduct =
-    productCatalog.find(product =>
+    productCatalog.find(product=>
 
-        product.code === item.code
+        product.code ===
+        item.code
 
     );
 
@@ -877,19 +1052,39 @@ function updateTotals(){
 
     let grandTotal = 0;
 
+    let mrpTotal = 0;
+
     let totalQty = 0;
 
-    items.forEach(item => {
+    items.forEach(item=>{
 
         grandTotal += item.total;
+
+        mrpTotal +=
+        item.mrp * item.qty;
 
         totalQty += item.qty;
 
     });
 
-    document.getElementById("totalCost")
+    let savings =
+    mrpTotal - grandTotal;
+
+    document.getElementById("grandTotal")
     .innerText =
     grandTotal.toFixed(2);
+
+    document.getElementById("billTotal")
+    .innerText =
+    grandTotal.toFixed(2);
+
+    document.getElementById("mrpTotal")
+    .innerText =
+    mrpTotal.toFixed(2);
+
+    document.getElementById("savings")
+    .innerText =
+    savings.toFixed(2);
 
     document.getElementById("totalItems")
     .innerText =
@@ -925,7 +1120,7 @@ function sendWhatsApp(){
 
     if(items.length===0){
 
-        alert("No items added");
+        alert("No items");
 
         return;
 
@@ -939,100 +1134,70 @@ function sendWhatsApp(){
 
     let grandTotal = 0;
 
-    let totalSavings = 0;
+    let mrpTotal = 0;
 
     let message =
 
-    "Sri Raghavendra Grocery\n\n";
+`Sri Raghavendra Grocery
 
-    message +=
+Invoice No:
+SRG-${String(invoiceCounter).padStart(4,"0")}
 
-    "Invoice No: SRG-" +
+Customer:
+${customer}
 
-    String(invoiceCounter)
-    .padStart(4,"0");
-
-    message +=
-    "\n\nCustomer: " +
-    customer;
-
-    message +=
-    "\n\n";
+`;
 
     items.forEach((item,index)=>{
 
-        let savings =
+        let total =
+        item.qty *
+        item.salePrice;
 
-        (item.mrp -
+        grandTotal += total;
 
-        item.salePrice)
-
-        *
-
-        item.qty;
-
-        totalSavings += savings;
-
-        grandTotal += item.total;
+        mrpTotal +=
+        item.qty *
+        item.mrp;
 
         message +=
 
-        (index+1) +
+`${index+1}. ${item.displayName}
 
-        ". " +
+Qty:
+${item.qty}
 
-        item.displayName +
+Price:
+₹${item.salePrice}
 
-        "\n";
+Total:
+₹${total.toFixed(2)}
 
-        message +=
-        "MRP: ₹" +
-        item.mrp +
-        "\n";
-
-        message +=
-        "Qty: " +
-        item.qty +
-        "\n";
-
-        message +=
-        "Selling Price: ₹" +
-        item.salePrice +
-        "\n";
-
-        message +=
-        "Total: ₹" +
-        item.total.toFixed(2) +
-        "\n\n";
+`;
 
     });
 
-    message +=
-    "--------------------------------\n\n";
+    let savings =
+    mrpTotal - grandTotal;
 
     message +=
-    "Grand Total: ₹" +
-    grandTotal.toFixed(2);
 
-    message +=
-    "\n\n..............................\n\n";
+`====================
 
-    message +=
-    "Your Savings: ₹" +
-    totalSavings.toFixed(2);
+Grand Total Rs.
+${grandTotal.toFixed(2)}
 
-    message +=
-    "\n\nThank You\nVisit Us Again";
+............................
+
+Your Savings Rs.
+${savings.toFixed(2)}
+
+Thank You
+Visit Again`;
 
     let url =
 
-    "https://wa.me/91" +
-
-    phone +
-
-    "?text=" +
-
-    encodeURIComponent(message);
+    `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
 
     window.open(url,"_blank");
 
@@ -1059,11 +1224,6 @@ function resetBill(){
 
     saveBill();
 
-    itemName.value="";
-    itemQty.value="";
-
-    selectedProduct = null;
-
 }
 
 /* =========================
@@ -1077,9 +1237,11 @@ function toggleDarkMode(){
     .toggle("darkMode");
 
     if(
+
         document.body
         .classList
         .contains("darkMode")
+
     ){
 
         localStorage.setItem(
@@ -1172,5 +1334,4 @@ window.onload = function(){
 </script>
 
 </body>
-
 </html>
