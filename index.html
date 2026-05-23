@@ -69,22 +69,6 @@ border:none;
 cursor:pointer;
 }
 
-/* suggestions */
-#suggestionsBox{
-border:1px solid #ddd;
-max-height:200px;
-overflow:auto;
-}
-
-.suggestionItem{
-padding:10px;
-border-bottom:1px solid #eee;
-cursor:pointer;
-}
-
-.selected{background:#007bff;color:white;}
-
-/* item */
 .item{
 background:#f7f7f7;
 padding:10px;
@@ -94,29 +78,16 @@ border-radius:10px;
 
 body.dark .item{background:#2a2a2a;}
 
-/* dashboard circle */
-.circleWrap{
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-margin-top:15px;
+.invoiceBox{
+background:#f3f3f3;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+max-height:400px;
+overflow:auto;
 }
 
-.circle{
-width:220px;
-height:220px;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-color:white;
-font-weight:600;
-text-align:center;
-}
-
-.circle small{font-size:12px;}
+body.dark .invoiceBox{background:#222;}
 
 </style>
 
@@ -143,19 +114,14 @@ Savings: ₹<span id="tSave">0</span>
 <button onclick="resetBill()">Reset</button>
 <button onclick="sendWhatsApp()">WhatsApp</button>
 
-<div class="circleWrap">
-
-<div class="circle" id="circle" style="background:#ddd;">
-No Sales
-</div>
+<!-- DATE FILTER -->
+<input type="date" id="dateFilter" onchange="filterByDate()">
 
 <!-- INVOICE SEARCH -->
 <input type="text" id="invSearch" placeholder="Search Invoice No">
 <button onclick="searchInvoice()">Search Invoice</button>
 
 <div id="invoiceResult"></div>
-
-</div>
 
 <button onclick="downloadExcel()">Download Excel</button>
 
@@ -175,11 +141,12 @@ No Sales
 
 </div>
 
-<!-- RIGHT -->
+<!-- RIGHT (REPLACED PIE CHART) -->
 <div class="panel">
 
-<h3>ITEMS</h3>
-<div id="list"></div>
+<h3>INVOICE LIST</h3>
+
+<div id="invoiceList" class="invoiceBox"></div>
 
 </div>
 
@@ -187,11 +154,10 @@ No Sales
 
 <script>
 
-/* ===================== DATA ===================== */
+/* ================= DATA ================= */
 
 let products = [];
 
-/* ✔ FIX: persistence */
 let items = JSON.parse(localStorage.getItem("items")) || [];
 let bills = JSON.parse(localStorage.getItem("bills")) || [];
 
@@ -200,52 +166,20 @@ let index = -1;
 
 let invoiceNo = bills.length ? bills[bills.length-1].invoiceNo + 1 : 1;
 
-/* ===================== SAVE ===================== */
+let lastBill = null;
+
+/* ================= SAVE ================= */
 
 function saveAll(){
 localStorage.setItem("items", JSON.stringify(items));
 localStorage.setItem("bills", JSON.stringify(bills));
 }
 
-/* ===================== DARK ===================== */
+/* ================= LOAD ================= */
 
-if(localStorage.getItem("dark")==="1")
-document.body.classList.add("dark");
+renderInvoices();
 
-/* ===================== EXCEL ===================== */
-
-file.onchange = e => {
-let reader = new FileReader();
-
-reader.onload = ev => {
-let data = new Uint8Array(ev.target.result);
-let wb = XLSX.read(data,{type:"array"});
-let sh = wb.Sheets[wb.SheetNames[0]];
-let json = XLSX.utils.sheet_to_json(sh,{header:1});
-
-products = [];
-
-for(let i=1;i<json.length;i++){
-let r = json[i];
-if(!r) continue;
-
-products.push({
-code:r[1],
-name:r[4],
-cat:r[0],
-mrp:+r[7]||0,
-sale:+r[8]||0,
-unit:r[5]
-});
-}
-
-alert("Excel Loaded");
-};
-
-reader.readAsArrayBuffer(e.target.files[0]);
-};
-
-/* ===================== SEARCH ===================== */
+/* ================= SEARCH PRODUCTS ================= */
 
 search.oninput = e => {
 let v = e.target.value.toLowerCase();
@@ -261,48 +195,12 @@ products.filter(p =>
 let d = document.createElement("div");
 d.className = "suggestionItem";
 d.innerText = p.name;
-d.onclick = () => select(p);
+d.onclick = ()=>select(p);
 suggestionsBox.appendChild(d);
 });
 };
 
-/* ===================== KEYBOARD FIX ===================== */
-
-search.onkeydown = e => {
-let s = document.querySelectorAll(".suggestionItem");
-
-if(s.length === 0) return;
-
-if(e.key === "ArrowDown"){
-e.preventDefault();
-index++;
-if(index >= s.length) index = 0;
-highlight(s);
-}
-
-if(e.key === "ArrowUp"){
-e.preventDefault();
-index--;
-if(index < 0) index = s.length - 1;
-highlight(s);
-}
-
-if(e.key === "Enter"){
-e.preventDefault();
-if(index >= 0 && s[index]) s[index].click();
-else qty.focus();
-}
-};
-
-function highlight(list){
-list.forEach(i => i.classList.remove("selected"));
-if(list[index]){
-list[index].classList.add("selected");
-list[index].scrollIntoView({block:"nearest"});
-}
-}
-
-/* ===================== SELECT ===================== */
+/* ================= SELECT ================= */
 
 function select(p){
 selected = p;
@@ -311,16 +209,7 @@ suggestionsBox.innerHTML = "";
 qty.focus();
 }
 
-/* ===================== QTY ===================== */
-
-qty.onkeydown = e => {
-if(e.key === "Enter"){
-e.preventDefault();
-addItem();
-}
-};
-
-/* ===================== ADD ===================== */
+/* ================= ADD ================= */
 
 function addItem(){
 
@@ -346,19 +235,17 @@ total:q*selected.sale
 });
 }
 
-selected = null;
+selected=null;
 search.value="";
 qty.value="";
 suggestionsBox.innerHTML="";
 
 render();
 totals();
-dashboard();
-
 saveAll();
 }
 
-/* ===================== RENDER ===================== */
+/* ================= RENDER ITEMS ================= */
 
 function render(){
 
@@ -368,7 +255,7 @@ items.forEach((i,idx)=>{
 list.innerHTML += `
 <div class="item">
 <b>${i.name}</b><br>
-Qty: ${i.qty}<br>
+Qty:${i.qty}<br>
 ₹${i.total.toFixed(2)}<br>
 
 <button onclick="edit(${idx})" style="background:#ffc107;color:black;">Edit</button>
@@ -377,7 +264,7 @@ Qty: ${i.qty}<br>
 });
 }
 
-/* ===================== EDIT ===================== */
+/* ================= EDIT DELETE ================= */
 
 function edit(i){
 let it = items[i];
@@ -389,19 +276,15 @@ selected = products.find(p=>p.code===it.code);
 
 items.splice(i,1);
 
-render();totals();dashboard();saveAll();
+render();totals();saveAll();
 }
-
-/* ===================== DELETE ===================== */
 
 function del(i){
 items.splice(i,1);
-
-render();totals();dashboard();
-saveAll();
+render();totals();saveAll();
 }
 
-/* ===================== TOTALS ===================== */
+/* ================= TOTALS ================= */
 
 function totals(){
 
@@ -413,53 +296,13 @@ b += i.total;
 q += i.qty;
 });
 
-tQty.innerText = q;
-tMrp.innerText = m.toFixed(2);
-tBill.innerText = b.toFixed(2);
-tSave.innerText = (m-b).toFixed(2);
+tQty.innerText=q;
+tMrp.innerText=m.toFixed(2);
+tBill.innerText=b.toFixed(2);
+tSave.innerText=(m-b).toFixed(2);
 }
 
-/* ===================== DASHBOARD ===================== */
-
-function dashboard(){
-
-let map={};
-
-items.forEach(i=>{
-let c=i.cat||"Other";
-map[c]=(map[c]||0)+i.total;
-});
-
-let total = Object.values(map).reduce((a,b)=>a+b,0);
-
-if(total===0){
-circle.style.background="#ddd";
-circle.innerHTML="No Sales";
-return;
-}
-
-let colors=["#007bff","#28a745","#ffc107","#dc3545","#6f42c1","#17a2b8"];
-
-let start=0;
-let grad=[];
-let i=0;
-
-for(let k in map){
-
-let pct=(map[k]/total)*100;
-let end=start+pct;
-
-grad.push(`${colors[i%colors.length]} ${start}% ${end}%`);
-
-start=end;
-i++;
-}
-
-circle.style.background = `conic-gradient(${grad.join(",")})`;
-circle.innerHTML = `<small>Total Sales</small><b>₹${total.toFixed(0)}</b>`;
-}
-
-/* ===================== SAVE BILL ===================== */
+/* ================= SAVE BILL ================= */
 
 function saveBill(){
 
@@ -476,14 +319,18 @@ mrpTotal += i.mrp*i.qty;
 grand += i.total;
 });
 
-bills.push({
+let bill = {
 invoiceNo,
-date:new Date().toLocaleString(),
+date:new Date().toISOString().split("T")[0],
+time:new Date().toLocaleString(),
 items:[...items],
 mrpTotal,
 grand,
 savings:mrpTotal-grand
-});
+};
+
+bills.push(bill);
+lastBill = bill;
 
 invoiceNo++;
 
@@ -492,50 +339,117 @@ saveAll();
 
 render();
 totals();
-dashboard();
+renderInvoices();
 
-alert("Bill Saved");
+alert("Bill Saved ✔");
 }
 
-/* ===================== SEARCH INVOICE ===================== */
+/* ================= WHATSAPP ================= */
+
+function sendWhatsApp(){
+
+let bill = lastBill;
+
+if(!bill){
+alert("No saved bill");
+return;
+}
+
+let msg="🧾 BILL\n\n";
+
+bill.items.forEach((i,idx)=>{
+msg += `${idx+1}. ${i.name}
+Qty:${i.qty}
+Total:₹${i.total.toFixed(2)}\n`;
+});
+
+msg += `
+TOTAL: ₹${bill.grand}
+DATE: ${bill.time}
+INVOICE: ${bill.invoiceNo}
+`;
+
+window.open("https://wa.me/?text="+encodeURIComponent(msg));
+}
+
+/* ================= INVOICE LIST ================= */
+
+function renderInvoices(){
+
+let box = document.getElementById("invoiceList");
+
+box.innerHTML = "";
+
+let filtered = bills;
+
+let date = dateFilter.value;
+if(date){
+filtered = bills.filter(b=>b.date===date);
+}
+
+filtered.forEach(b=>{
+box.innerHTML += `
+<div class="item" onclick="openBill(${b.invoiceNo})">
+<b>Invoice #${b.invoiceNo}</b><br>
+${b.date}<br>
+₹${b.grand}
+</div>`;
+});
+}
+
+/* OPEN BILL */
+function openBill(no){
+
+let b = bills.find(x=>x.invoiceNo===no);
+
+if(!b) return;
+
+invoiceResult.innerHTML = `
+<b>Invoice #${b.invoiceNo}</b><br>
+Date:${b.time}<br>
+Total:₹${b.grand}<br>
+`;
+
+items = b.items;
+render();
+totals();
+}
+
+/* ================= DATE FILTER ================= */
+
+function filterByDate(){
+renderInvoices();
+}
+
+/* ================= SEARCH INVOICE ================= */
 
 function searchInvoice(){
 
 let no = parseInt(invSearch.value);
 
-let bill = bills.find(b=>b.invoiceNo===no);
+let b = bills.find(x=>x.invoiceNo===no);
 
-if(!bill){
-invoiceResult.innerHTML="❌ Not Found";
+if(!b){
+invoiceResult.innerHTML="Not Found";
 return;
 }
 
-let html = `
-<b>Invoice #${bill.invoiceNo}</b><br>
-Date: ${bill.date}<br>
-MRP: ₹${bill.mrpTotal.toFixed(2)}<br>
-Bill: ₹${bill.grand.toFixed(2)}<br>
-Savings: ₹${bill.savings.toFixed(2)}<br><br>
-
-<b>Items:</b><br>
+invoiceResult.innerHTML = `
+<b>Invoice #${b.invoiceNo}</b><br>
+Date:${b.time}<br>
+Total:₹${b.grand}
 `;
-
-bill.items.forEach(i=>{
-html += `${i.name} - Qty:${i.qty} - ₹${i.total.toFixed(2)}<br>`;
-});
-
-invoiceResult.innerHTML = html;
 }
 
-/* ===================== RESET ===================== */
+/* ================= RESET ================= */
 
 function resetBill(){
 items=[];
 saveAll();
-render();totals();dashboard();
+render();totals();
 }
 
-/* ===================== DARK ===================== */
+/* ================= DARK ================= */
 
 function toggleDark(){
 document.body.classList.toggle("dark");
@@ -543,40 +457,7 @@ localStorage.setItem("dark",
 document.body.classList.contains("dark")?1:0);
 }
 
-/* ===================== WHATSAPP ===================== */
-
-function sendWhatsApp(){
-
-if(items.length===0){
-alert("No items in bill");
-return;
-}
-
-let msg="🧾 *BILL RECEIPT*\n\n";
-
-let grand=0;
-let mrpTotal=0;
-
-items.forEach((i,idx)=>{
-mrpTotal += i.mrp*i.qty;
-grand += i.total;
-
-msg += `${idx+1}. ${i.name}
-Qty:${i.qty}
-MRP:₹${i.mrp} Sale:₹${i.sale}
-Total:₹${i.total.toFixed(2)}
--------------------\n`;
-});
-
-msg += `
-GRAND: ₹${grand.toFixed(2)}
-SAVE: ₹${(mrpTotal-grand).toFixed(2)}
-`;
-
-window.open("https://wa.me/?text="+encodeURIComponent(msg));
-}
-
-/* ===================== EXCEL ===================== */
+/* ================= EXCEL ================= */
 
 function downloadExcel(){
 
