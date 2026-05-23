@@ -10,6 +10,8 @@ content="width=device-width, initial-scale=1.0">
 
 <title>Billing App</title>
 
+<!-- POPPINS FONT -->
+
 <link rel="preconnect"
 href="https://fonts.googleapis.com">
 
@@ -19,6 +21,10 @@ crossorigin>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
 rel="stylesheet">
+
+<!-- EXCEL LIBRARY -->
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 
@@ -102,7 +108,8 @@ body{
     background:#b02a37;
 }
 
-input,button{
+input,
+button{
     width:100%;
     padding:12px;
     margin-top:10px;
@@ -179,6 +186,26 @@ button:hover{
     font-size:12px;
 }
 
+#suggestionsBox{
+    background:white;
+    border:1px solid #ccc;
+    border-radius:8px;
+    margin-top:2px;
+    max-height:200px;
+    overflow-y:auto;
+}
+
+.suggestionItem{
+    padding:10px;
+    cursor:pointer;
+    border-bottom:1px solid #eee;
+    font-size:14px;
+}
+
+.suggestionItem:hover{
+    background:#f0f0f0;
+}
+
 .darkMode{
     background:#111;
     color:white;
@@ -202,7 +229,22 @@ button:hover{
     color:#ccc;
 }
 
+.darkMode #suggestionsBox{
+    background:#333;
+    color:white;
+    border:1px solid #555;
+}
+
+.darkMode .suggestionItem{
+    border-bottom:1px solid #555;
+}
+
+.darkMode .suggestionItem:hover{
+    background:#444;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -240,7 +282,13 @@ button:hover{
 
     </div>
 
-    <!-- CUSTOMER DETAILS -->
+    <!-- CSV / EXCEL UPLOAD -->
+
+    <input type="file"
+    id="productFile"
+    accept=".csv,.xlsx,.xls">
+
+    <!-- CUSTOMER -->
 
     <input type="text"
     id="customerName"
@@ -250,11 +298,15 @@ button:hover{
     id="customerPhone"
     placeholder="WhatsApp Number">
 
-    <!-- ITEM INPUTS -->
+    <!-- ITEM -->
 
     <input type="text"
     id="itemName"
-    placeholder="Item Name (Optional)">
+    placeholder="Search Product">
+
+    <!-- AUTOCOMPLETE -->
+
+    <div id="suggestionsBox"></div>
 
     <input type="text"
     id="itemQty"
@@ -269,7 +321,7 @@ button:hover{
         Add Item
     </button>
 
-    <!-- TOTAL BOX -->
+    <!-- TOTALS -->
 
     <div class="totalBox">
 
@@ -288,7 +340,7 @@ button:hover{
 
     </div>
 
-    <!-- ITEM LIST -->
+    <!-- ITEMS -->
 
     <div id="itemList"></div>
 
@@ -297,6 +349,8 @@ button:hover{
 <script>
 
 let items = [];
+
+let productCatalog = [];
 
 let invoiceCounter =
 localStorage.getItem("invoiceCounter") || 1;
@@ -310,6 +364,263 @@ document.getElementById("itemQty");
 const itemPrice =
 document.getElementById("itemPrice");
 
+const suggestionsBox =
+document.getElementById("suggestionsBox");
+
+const productFile =
+document.getElementById("productFile");
+
+/* LOAD SAVED PRODUCT CATALOG */
+
+let savedCatalog =
+localStorage.getItem("productCatalog");
+
+if(savedCatalog){
+
+    productCatalog =
+    JSON.parse(savedCatalog);
+
+}
+
+/* FILE UPLOAD */
+
+productFile.addEventListener("change",function(e){
+
+    let file = e.target.files[0];
+
+    if(!file){
+        return;
+    }
+
+    let fileName =
+    file.name.toLowerCase();
+
+    /* CSV */
+
+    if(fileName.endsWith(".csv")){
+
+        let reader =
+        new FileReader();
+
+        reader.onload = function(event){
+
+            let csv =
+            event.target.result;
+
+            parseCSV(csv);
+
+        };
+
+        reader.readAsText(file);
+
+    }
+
+    /* EXCEL */
+
+    else if(
+
+        fileName.endsWith(".xlsx")
+
+        ||
+
+        fileName.endsWith(".xls")
+
+    ){
+
+        let reader =
+        new FileReader();
+
+        reader.onload = function(event){
+
+            let data =
+            new Uint8Array(
+                event.target.result
+            );
+
+            let workbook =
+            XLSX.read(data,{
+
+                type:"array"
+
+            });
+
+            let firstSheet =
+            workbook.Sheets[
+                workbook.SheetNames[0]
+            ];
+
+            let jsonData =
+            XLSX.utils.sheet_to_json(
+                firstSheet,
+                {header:1}
+            );
+
+            convertExcelData(jsonData);
+
+        };
+
+        reader.readAsArrayBuffer(file);
+
+    }
+
+});
+
+/* CSV PARSER */
+
+function parseCSV(csv){
+
+    let lines =
+    csv.split("\n");
+
+    productCatalog = [];
+
+    for(let i=1;i<lines.length;i++){
+
+        let row =
+        lines[i].split(",");
+
+        if(row.length >= 4){
+
+            productCatalog.push({
+
+                code:row[0].trim(),
+                name:row[1].trim(),
+                unit:row[2].trim(),
+                price:parseFloat(row[3])
+
+            });
+
+        }
+
+    }
+
+    saveCatalog();
+
+    alert(
+    "CSV Products Loaded Successfully"
+    );
+
+}
+
+/* EXCEL PARSER */
+
+function convertExcelData(data){
+
+    productCatalog = [];
+
+    for(let i=1;i<data.length;i++){
+
+        let row = data[i];
+
+        if(row.length >= 4){
+
+            productCatalog.push({
+
+                code:String(row[0]).trim(),
+                name:String(row[1]).trim(),
+                unit:String(row[2]).trim(),
+                price:parseFloat(row[3])
+
+            });
+
+        }
+
+    }
+
+    saveCatalog();
+
+    alert(
+    "Excel Products Loaded Successfully"
+    );
+
+}
+
+/* SAVE CATALOG */
+
+function saveCatalog(){
+
+    localStorage.setItem(
+
+        "productCatalog",
+
+        JSON.stringify(productCatalog)
+
+    );
+
+}
+
+/* AUTOCOMPLETE */
+
+itemName.addEventListener("input",function(){
+
+    let search =
+    itemName.value.toLowerCase();
+
+    suggestionsBox.innerHTML="";
+
+    if(search===""){
+        return;
+    }
+
+    let filtered =
+    productCatalog.filter(product =>
+
+        product.name
+        .toLowerCase()
+        .includes(search)
+
+    );
+
+    filtered.slice(0,20)
+    .forEach(product => {
+
+        let div =
+        document.createElement("div");
+
+        div.className =
+        "suggestionItem";
+
+        div.innerHTML =
+
+        "<strong>" +
+
+        product.code +
+
+        "</strong> - " +
+
+        product.name +
+
+        " (" +
+
+        product.unit +
+
+        ") - ₹" +
+
+        product.price;
+
+        div.onclick = function(){
+
+            itemName.value =
+            product.name;
+
+            itemPrice.value =
+            product.price;
+
+            suggestionsBox.innerHTML="";
+
+            itemQty.focus();
+
+        };
+
+        suggestionsBox
+        .appendChild(div);
+
+    });
+
+});
+
+/* KEYBOARD SHORTCUTS */
+
 itemName.addEventListener("keydown",function(e){
 
     if(e.key==="Enter"){
@@ -320,15 +631,6 @@ itemName.addEventListener("keydown",function(e){
 });
 
 itemQty.addEventListener("keydown",function(e){
-
-    if(e.key==="Enter"){
-        e.preventDefault();
-        itemPrice.focus();
-    }
-
-});
-
-itemPrice.addEventListener("keydown",function(e){
 
     if(e.key==="Enter"){
         e.preventDefault();
@@ -349,6 +651,8 @@ document.addEventListener("keydown",function(e){
 
 });
 
+/* ADD ITEM */
+
 function addItem(){
 
     let name =
@@ -362,14 +666,12 @@ function addItem(){
 
     if(isNaN(qty) || isNaN(price)){
 
-        alert("Please enter quantity and price");
+        alert(
+        "Please enter quantity and price"
+        );
 
         return;
 
-    }
-
-    if(name===""){
-        name="Item";
     }
 
     let total =
@@ -377,9 +679,15 @@ function addItem(){
 
     let existingItem =
     items.find(item =>
-        item.name.toLowerCase() === name.toLowerCase()
+
+        item.name.toLowerCase()
+        ===
+        name.toLowerCase()
+
         &&
+
         item.price === price
+
     );
 
     if(existingItem){
@@ -387,7 +695,8 @@ function addItem(){
         existingItem.qty += qty;
 
         existingItem.total =
-        existingItem.qty * existingItem.price;
+        existingItem.qty *
+        existingItem.price;
 
     }else{
 
@@ -412,9 +721,13 @@ function addItem(){
     itemQty.value="";
     itemPrice.value="";
 
+    suggestionsBox.innerHTML="";
+
     itemName.focus();
 
 }
+
+/* DISPLAY ITEMS */
 
 function displayItems(){
 
@@ -475,6 +788,8 @@ function displayItems(){
 
 }
 
+/* EDIT */
+
 function editItem(index){
 
     let item = items[index];
@@ -493,6 +808,8 @@ function editItem(index){
 
 }
 
+/* DELETE */
+
 function removeItem(index){
 
     items.splice(index,1);
@@ -504,6 +821,8 @@ function removeItem(index){
     saveToLocalStorage();
 
 }
+
+/* TOTALS */
 
 function updateTotals(){
 
@@ -531,14 +850,21 @@ function updateTotals(){
 
 }
 
+/* SAVE BILL */
+
 function saveToLocalStorage(){
 
     localStorage.setItem(
+
         "billingItems",
+
         JSON.stringify(items)
+
     );
 
 }
+
+/* WHATSAPP */
 
 function sendWhatsApp(){
 
@@ -563,8 +889,11 @@ function sendWhatsApp(){
     let now = new Date();
 
     let invoiceNumber =
+
     "SRG-" +
-    String(invoiceCounter).padStart(4,"0");
+
+    String(invoiceCounter)
+    .padStart(4,"0");
 
     let billDate =
     now.toLocaleDateString("en-IN",{
@@ -586,7 +915,7 @@ function sendWhatsApp(){
 
     let message =
 
-    "Sri Raghavendra Grocery | Bilekahalli\n\n" +
+    "Sri Raghavendra Grocery\n\n" +
 
     "Invoice No: " +
     invoiceNumber +
@@ -605,11 +934,17 @@ function sendWhatsApp(){
     items.forEach((item)=>{
 
         message +=
+
         item.name +
+
         " | Qty: " +
+
         item.qty +
+
         " | ₹" +
+
         item.total.toFixed(2) +
+
         "\n";
 
         totalCost += item.total;
@@ -617,7 +952,8 @@ function sendWhatsApp(){
 
     });
 
-    message += "\n------------------\n";
+    message +=
+    "\n------------------\n";
 
     message +=
     "Total Quantity: " +
@@ -629,17 +965,16 @@ function sendWhatsApp(){
 
     message +=
     "Total Cost: ₹" +
-    totalCost.toFixed(2) +
-
-    "\n\nThank you for shopping with us" +
-
-    "\nVisit Again";
+    totalCost.toFixed(2);
 
     let url =
 
     "https://wa.me/91" +
+
     phone +
+
     "?text=" +
+
     encodeURIComponent(message);
 
     window.open(url,"_blank");
@@ -652,6 +987,8 @@ function sendWhatsApp(){
     );
 
 }
+
+/* RESET */
 
 function resetBill(){
 
@@ -667,15 +1004,25 @@ function resetBill(){
     itemQty.value="";
     itemPrice.value="";
 
+    suggestionsBox.innerHTML="";
+
     itemName.focus();
 
 }
 
+/* DARK MODE */
+
 function toggleDarkMode(){
 
-    document.body.classList.toggle("darkMode");
+    document.body
+    .classList
+    .toggle("darkMode");
 
-    if(document.body.classList.contains("darkMode")){
+    if(
+        document.body
+        .classList
+        .contains("darkMode")
+    ){
 
         localStorage.setItem(
             "darkMode",
@@ -693,6 +1040,8 @@ function toggleDarkMode(){
 
 }
 
+/* DATE TIME */
+
 function updateDateTime(){
 
     let now = new Date();
@@ -709,11 +1058,17 @@ function updateDateTime(){
 
     document.getElementById("dateTime")
     .innerText =
-    now.toLocaleString("en-IN",options);
+
+    now.toLocaleString(
+        "en-IN",
+        options
+    );
 
 }
 
 setInterval(updateDateTime,60000);
+
+/* LOAD */
 
 window.onload = function(){
 
@@ -722,7 +1077,8 @@ window.onload = function(){
 
     if(savedItems){
 
-        items = JSON.parse(savedItems);
+        items =
+        JSON.parse(savedItems);
 
         displayItems();
 
@@ -735,7 +1091,9 @@ window.onload = function(){
 
     if(darkMode==="enabled"){
 
-        document.body.classList.add("darkMode");
+        document.body
+        .classList
+        .add("darkMode");
 
     }
 
