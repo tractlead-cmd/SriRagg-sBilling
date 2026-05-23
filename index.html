@@ -45,6 +45,8 @@ body{
     box-shadow:0 0 12px rgba(0,0,0,0.08);
 }
 
+/* HEADER */
+
 .header{
     display:flex;
     justify-content:space-between;
@@ -90,6 +92,8 @@ body{
     background:#dc3545;
 }
 
+/* FORM */
+
 input,
 select,
 button{
@@ -108,6 +112,8 @@ button{
     border:none;
     cursor:pointer;
 }
+
+/* SUGGESTIONS */
 
 #suggestionsBox{
     background:white;
@@ -128,6 +134,8 @@ button{
     background:#f0f0f0;
 }
 
+/* TOTAL BOX */
+
 .totalBox{
     margin-top:15px;
     padding:15px;
@@ -139,7 +147,6 @@ button{
     display:flex;
     justify-content:space-between;
     margin-bottom:10px;
-    font-size:15px;
 }
 
 .dotted{
@@ -160,6 +167,8 @@ button{
     font-weight:600;
     margin-top:8px;
 }
+
+/* ITEM LIST */
 
 #itemList{
     margin-top:18px;
@@ -228,6 +237,8 @@ button{
     padding:8px;
     font-size:13px;
 }
+
+/* DARK MODE */
 
 .darkMode{
     background:#111;
@@ -316,9 +327,13 @@ onclick="resetBill()">
 
 </div>
 
+<!-- FILE -->
+
 <input type="file"
 id="productFile"
 accept=".xlsx,.xls,.csv">
+
+<!-- CUSTOMER -->
 
 <input type="text"
 id="customerName"
@@ -328,6 +343,8 @@ placeholder="Customer Name">
 id="customerPhone"
 placeholder="WhatsApp Number">
 
+<!-- CATEGORY -->
+
 <select id="categoryFilter">
 
 <option value="">
@@ -335,6 +352,8 @@ All Categories
 </option>
 
 </select>
+
+<!-- PRODUCT -->
 
 <input type="text"
 id="itemName"
@@ -349,6 +368,8 @@ placeholder="Quantity">
 <button onclick="addItem()">
 Add Item
 </button>
+
+<!-- TOTALS -->
 
 <div class="totalBox">
 
@@ -384,17 +405,20 @@ Your Savings ₹<span id="savings">0.00</span>
 
 </div>
 
+<!-- ITEMS -->
+
 <div id="itemList"></div>
 
 </div>
 
 <script>
 
+/* GLOBAL */
+
 let items = [];
-
 let productCatalog = [];
-
 let selectedProduct = null;
+let currentSuggestionIndex = -1;
 
 /* ELEMENTS */
 
@@ -507,7 +531,7 @@ function parseExcel(data){
 
 }
 
-/* LOAD CATEGORY */
+/* CATEGORY */
 
 function loadCategories(){
 
@@ -547,7 +571,9 @@ itemName.addEventListener("input",function(){
     let selectedCategory =
     categoryFilter.value;
 
-    suggestionsBox.innerHTML="";
+    suggestionsBox.innerHTML = "";
+
+    currentSuggestionIndex = -1;
 
     if(search===""){
         return;
@@ -583,7 +609,7 @@ itemName.addEventListener("input",function(){
     });
 
     filtered.slice(0,20)
-    .forEach(product=>{
+    .forEach((product,index)=>{
 
         let div =
         document.createElement("div");
@@ -607,15 +633,7 @@ itemName.addEventListener("input",function(){
 
         div.onclick = function(){
 
-            selectedProduct =
-            product;
-
-            itemName.value =
-            product.displayName;
-
-            suggestionsBox.innerHTML="";
-
-            itemQty.focus();
+            selectSuggestion(product);
 
         };
 
@@ -625,19 +643,114 @@ itemName.addEventListener("input",function(){
 
 });
 
-/* KEYBOARD FLOW */
+/* ARROW KEYS */
 
 itemName.addEventListener("keydown",function(e){
 
-    if(e.key==="Enter"){
+    let suggestionItems =
+    document.querySelectorAll(".suggestionItem");
+
+    /* DOWN */
+
+    if(e.key==="ArrowDown"){
 
         e.preventDefault();
 
-        itemQty.focus();
+        if(
+            currentSuggestionIndex <
+            suggestionItems.length - 1
+        ){
+
+            currentSuggestionIndex++;
+
+            updateHighlight();
+
+        }
+
+    }
+
+    /* UP */
+
+    else if(e.key==="ArrowUp"){
+
+        e.preventDefault();
+
+        if(currentSuggestionIndex > 0){
+
+            currentSuggestionIndex--;
+
+            updateHighlight();
+
+        }
+
+    }
+
+    /* ENTER */
+
+    else if(e.key==="Enter"){
+
+        e.preventDefault();
+
+        if(currentSuggestionIndex >= 0){
+
+            suggestionItems[
+                currentSuggestionIndex
+            ].click();
+
+        }
+
+        else{
+
+            itemQty.focus();
+
+        }
 
     }
 
 });
+
+/* HIGHLIGHT */
+
+function updateHighlight(){
+
+    let suggestionItems =
+    document.querySelectorAll(".suggestionItem");
+
+    suggestionItems.forEach(item=>{
+
+        item.style.background = "";
+
+    });
+
+    if(currentSuggestionIndex >= 0){
+
+        suggestionItems[
+            currentSuggestionIndex
+        ].style.background =
+        "#dfefff";
+
+    }
+
+}
+
+/* SELECT PRODUCT */
+
+function selectSuggestion(product){
+
+    selectedProduct = product;
+
+    itemName.value =
+    product.displayName;
+
+    suggestionsBox.innerHTML = "";
+
+    currentSuggestionIndex = -1;
+
+    itemQty.focus();
+
+}
+
+/* QUANTITY ENTER */
 
 itemQty.addEventListener("keydown",function(e){
 
@@ -871,9 +984,7 @@ function removeItem(index){
 function updateTotals(){
 
     let grandTotal = 0;
-
     let mrpTotal = 0;
-
     let totalQty = 0;
 
     items.forEach(item=>{
