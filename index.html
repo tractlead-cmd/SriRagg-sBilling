@@ -34,6 +34,7 @@ body{
     font-family:'Poppins',sans-serif;
     background:#f5f5f5;
     padding:15px;
+    transition:0.3s;
 }
 
 .container{
@@ -43,6 +44,7 @@ body{
     padding:18px;
     border-radius:18px;
     box-shadow:0 0 12px rgba(0,0,0,0.08);
+    transition:0.3s;
 }
 
 /* HEADER */
@@ -61,7 +63,7 @@ body{
 
 #dateTime{
     font-size:12px;
-    color:gray;
+    color:#666;
     margin-top:3px;
 }
 
@@ -71,13 +73,13 @@ body{
 }
 
 .iconBtn{
-    border:none;
-    color:white;
     width:42px;
     height:42px;
+    border:none;
     border-radius:10px;
-    cursor:pointer;
+    color:white;
     font-size:18px;
+    cursor:pointer;
 }
 
 .whatsappBtn{
@@ -92,7 +94,7 @@ body{
     background:#dc3545;
 }
 
-/* FORM */
+/* INPUTS */
 
 input,
 select,
@@ -128,19 +130,20 @@ button{
     padding:12px;
     border-bottom:1px solid #eee;
     cursor:pointer;
+    transition:0.2s;
 }
 
 .suggestionItem:hover{
-    background:#f0f0f0;
+    background:#f2f7ff;
 }
 
 /* TOTAL BOX */
 
 .totalBox{
     margin-top:15px;
+    background:#f7f7f7;
     padding:15px;
     border-radius:14px;
-    background:#f4f4f4;
 }
 
 .totalLine{
@@ -150,9 +153,8 @@ button{
 }
 
 .dotted{
-    border-bottom:2px dashed #000;
-    margin-top:12px;
-    margin-bottom:12px;
+    border-bottom:2px dashed #999;
+    margin:12px 0;
 }
 
 .grandTotal{
@@ -175,7 +177,6 @@ button{
     max-height:320px;
     overflow-y:auto;
     padding-right:4px;
-    scrollbar-width:thin;
 }
 
 #itemList::-webkit-scrollbar{
@@ -189,10 +190,10 @@ button{
 
 .item{
     background:#fafafa;
-    padding:12px;
-    border-radius:12px;
-    margin-bottom:10px;
     border:1px solid #eee;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
 }
 
 .itemTop{
@@ -208,8 +209,9 @@ button{
 
 .itemSub{
     font-size:12px;
-    color:gray;
+    color:#666;
     margin-top:4px;
+    line-height:1.6;
 }
 
 .itemPrice{
@@ -251,26 +253,35 @@ button{
 
 .darkMode input,
 .darkMode select{
-    background:#333;
+    background:#2b2b2b;
     color:white;
-    border:1px solid #555;
+    border:1px solid #444;
+}
+
+.darkMode input::placeholder{
+    color:#bbb;
+}
+
+.darkMode #dateTime{
+    color:#bbb;
 }
 
 .darkMode #suggestionsBox{
-    background:#333;
-    border:1px solid #555;
+    background:#2b2b2b;
+    border:1px solid #444;
 }
 
 .darkMode .suggestionItem{
-    border-bottom:1px solid #555;
+    border-bottom:1px solid #444;
+    color:white;
 }
 
 .darkMode .suggestionItem:hover{
-    background:#444;
+    background:#3a3a3a;
 }
 
 .darkMode .totalBox{
-    background:#333;
+    background:#2b2b2b;
 }
 
 .darkMode .item{
@@ -279,11 +290,23 @@ button{
 }
 
 .darkMode .itemSub{
-    color:#bbb;
+    color:#ccc;
 }
 
-.darkMode #dateTime{
-    color:#bbb;
+.darkMode .dotted{
+    border-bottom:2px dashed #666;
+}
+
+/* SELECTED ITEM */
+
+.selectedSuggestion{
+    background:#007bff !important;
+    color:white !important;
+}
+
+.darkMode .selectedSuggestion{
+    background:#3399ff !important;
+    color:white !important;
 }
 
 </style>
@@ -327,13 +350,9 @@ onclick="resetBill()">
 
 </div>
 
-<!-- FILE -->
-
 <input type="file"
 id="productFile"
 accept=".xlsx,.xls,.csv">
-
-<!-- CUSTOMER -->
 
 <input type="text"
 id="customerName"
@@ -343,8 +362,6 @@ placeholder="Customer Name">
 id="customerPhone"
 placeholder="WhatsApp Number">
 
-<!-- CATEGORY -->
-
 <select id="categoryFilter">
 
 <option value="">
@@ -352,8 +369,6 @@ All Categories
 </option>
 
 </select>
-
-<!-- PRODUCT -->
 
 <input type="text"
 id="itemName"
@@ -368,8 +383,6 @@ placeholder="Quantity">
 <button onclick="addItem()">
 Add Item
 </button>
-
-<!-- TOTALS -->
 
 <div class="totalBox">
 
@@ -396,16 +409,14 @@ Add Item
 <div class="dotted"></div>
 
 <div class="grandTotal">
-Grand Total ₹<span id="grandTotal">0.00</span>
+₹<span id="grandTotal">0.00</span>
 </div>
 
 <div class="savings">
-Your Savings ₹<span id="savings">0.00</span>
+You Saved ₹<span id="savings">0.00</span>
 </div>
 
 </div>
-
-<!-- ITEMS -->
 
 <div id="itemList"></div>
 
@@ -437,7 +448,7 @@ document.getElementById("categoryFilter");
 const productFile =
 document.getElementById("productFile");
 
-/* FILE UPLOAD */
+/* EXCEL */
 
 productFile.addEventListener("change",function(e){
 
@@ -481,7 +492,7 @@ productFile.addEventListener("change",function(e){
 
 });
 
-/* PARSE EXCEL */
+/* PARSE */
 
 function parseExcel(data){
 
@@ -506,9 +517,6 @@ function parseExcel(data){
             brand:
             String(row[2] || "").trim(),
 
-            internalName:
-            String(row[3] || "").trim(),
-
             displayName:
             String(row[4] || "").trim(),
 
@@ -531,7 +539,7 @@ function parseExcel(data){
 
 }
 
-/* CATEGORY */
+/* CATEGORIES */
 
 function loadCategories(){
 
@@ -539,7 +547,6 @@ function loadCategories(){
     '<option value="">All Categories</option>';
 
     let categories =
-
     [...new Set(
         productCatalog.map(
             p=>p.category
@@ -643,14 +650,12 @@ itemName.addEventListener("input",function(){
 
 });
 
-/* ARROW KEYS */
+/* ARROW NAVIGATION */
 
 itemName.addEventListener("keydown",function(e){
 
     let suggestionItems =
     document.querySelectorAll(".suggestionItem");
-
-    /* DOWN */
 
     if(e.key==="ArrowDown"){
 
@@ -669,8 +674,6 @@ itemName.addEventListener("keydown",function(e){
 
     }
 
-    /* UP */
-
     else if(e.key==="ArrowUp"){
 
         e.preventDefault();
@@ -684,8 +687,6 @@ itemName.addEventListener("keydown",function(e){
         }
 
     }
-
-    /* ENTER */
 
     else if(e.key==="Enter"){
 
@@ -718,7 +719,9 @@ function updateHighlight(){
 
     suggestionItems.forEach(item=>{
 
-        item.style.background = "";
+        item.classList.remove(
+            "selectedSuggestion"
+        );
 
     });
 
@@ -730,16 +733,13 @@ function updateHighlight(){
             currentSuggestionIndex
         ];
 
-        activeItem.style.background =
-        #007bff";
-
-        /* AUTO SCROLL */
+        activeItem.classList.add(
+            "selectedSuggestion"
+        );
 
         activeItem.scrollIntoView({
 
-            block:"nearest",
-
-            behavior:"smooth"
+            block:"nearest"
 
         });
 
@@ -747,7 +747,7 @@ function updateHighlight(){
 
 }
 
-/* SELECT PRODUCT */
+/* SELECT */
 
 function selectSuggestion(product){
 
@@ -764,7 +764,7 @@ function selectSuggestion(product){
 
 }
 
-/* QUANTITY ENTER */
+/* ENTER QTY */
 
 itemQty.addEventListener("keydown",function(e){
 
@@ -778,7 +778,7 @@ itemQty.addEventListener("keydown",function(e){
 
 });
 
-/* ADD ITEM */
+/* ADD */
 
 function addItem(){
 
@@ -801,66 +801,37 @@ function addItem(){
 
     }
 
-    let existingItem =
-    items.find(item=>
+    items.push({
 
-        item.code ===
-        selectedProduct.code
+        displayName:
+        selectedProduct.displayName,
 
-    );
+        brand:
+        selectedProduct.brand,
 
-    if(existingItem){
+        unit:
+        selectedProduct.unit,
 
-        existingItem.qty += qty;
+        qty:qty,
 
-        existingItem.total =
+        mrp:
+        selectedProduct.mrp,
 
-        existingItem.qty *
+        salePrice:
+        selectedProduct.salePrice,
 
-        existingItem.salePrice;
+        total:
+        qty *
+        selectedProduct.salePrice
 
-    }
-
-    else{
-
-        items.push({
-
-            code:
-            selectedProduct.code,
-
-            brand:
-            selectedProduct.brand,
-
-            displayName:
-            selectedProduct.displayName,
-
-            unit:
-            selectedProduct.unit,
-
-            mrp:
-            selectedProduct.mrp,
-
-            salePrice:
-            selectedProduct.salePrice,
-
-            qty:qty,
-
-            total:
-            qty *
-            selectedProduct.salePrice
-
-        });
-
-    }
+    });
 
     displayItems();
 
     updateTotals();
 
     itemName.value = "";
-
     itemQty.value = "";
-
     suggestionsBox.innerHTML = "";
 
     selectedProduct = null;
@@ -869,21 +840,21 @@ function addItem(){
 
 }
 
-/* DISPLAY ITEMS */
+/* DISPLAY */
 
 function displayItems(){
 
     let itemList =
     document.getElementById("itemList");
 
-    itemList.innerHTML="";
+    itemList.innerHTML = "";
 
     items.forEach((item,index)=>{
 
         let div =
         document.createElement("div");
 
-        div.className="item";
+        div.className = "item";
 
         div.innerHTML = `
 
@@ -927,69 +898,11 @@ function displayItems(){
 
         </div>
 
-        <div class="itemButtons">
-
-        <button class="editBtn"
-        onclick="editItem(${index})">
-
-        Edit
-
-        </button>
-
-        <button class="deleteBtn"
-        onclick="removeItem(${index})">
-
-        Delete
-
-        </button>
-
-        </div>
-
         `;
 
         itemList.appendChild(div);
 
     });
-
-}
-
-/* EDIT */
-
-function editItem(index){
-
-    let item = items[index];
-
-    itemName.value =
-    item.displayName;
-
-    itemQty.value =
-    item.qty;
-
-    selectedProduct =
-    productCatalog.find(product=>
-
-        product.code ===
-        item.code
-
-    );
-
-    items.splice(index,1);
-
-    displayItems();
-
-    updateTotals();
-
-}
-
-/* DELETE */
-
-function removeItem(index){
-
-    items.splice(index,1);
-
-    displayItems();
-
-    updateTotals();
 
 }
 
@@ -1053,55 +966,6 @@ function resetBill(){
 
 }
 
-/* WHATSAPP */
-
-function sendWhatsApp(){
-
-    let phone =
-    document.getElementById("customerPhone").value;
-
-    let grandTotal = 0;
-
-    let message =
-`Sri Raghavendra Grocery
-
-`;
-
-    items.forEach((item,index)=>{
-
-        grandTotal += item.total;
-
-        message +=
-
-`${index+1}. ${item.displayName}
-
-Qty: ${item.qty}
-
-Price: ₹${item.salePrice}
-
-Total: ₹${item.total.toFixed(2)}
-
-`;
-
-    });
-
-    message +=
-
-`----------------------
-
-Grand Total Rs.
-${grandTotal.toFixed(2)}
-
-Thank You`;
-
-    let url =
-
-`https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
-
-    window.open(url,"_blank");
-
-}
-
 /* DARK MODE */
 
 function toggleDarkMode(){
@@ -1112,33 +976,32 @@ function toggleDarkMode(){
 
 }
 
+/* WHATSAPP */
+
+function sendWhatsApp(){
+
+    alert("WhatsApp Ready");
+
+}
+
 /* DATE */
 
 function updateDateTime(){
 
     let now = new Date();
 
-    let options = {
-
-        weekday:"short",
-
-        day:"2-digit",
-
-        month:"short",
-
-        hour:"numeric",
-
-        minute:"2-digit"
-
-    };
-
     document.getElementById("dateTime")
     .innerText =
 
-    now.toLocaleString(
-        "en-IN",
-        options
-    );
+    now.toLocaleString("en-IN",{
+
+        weekday:"short",
+        day:"2-digit",
+        month:"short",
+        hour:"numeric",
+        minute:"2-digit"
+
+    });
 
 }
 
