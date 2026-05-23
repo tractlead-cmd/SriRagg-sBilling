@@ -21,7 +21,7 @@ body{
     background:#f5f5f5;
 }
 
-/* MAIN LAYOUT */
+/* LAYOUT */
 .app{
     display:flex;
     gap:12px;
@@ -40,19 +40,16 @@ body{
     flex-direction:column;
 }
 
-/* CENTER SLIGHTLY BIGGER */
-.centerPanel{
-    flex:1.2;
-}
+.centerPanel{flex:1.2;}
 
-/* SCROLL RIGHT SIDE */
+/* RIGHT SCROLL */
 .rightPanel #itemList{
     flex:1;
     overflow-y:auto;
     margin-top:10px;
 }
 
-/* LEFT TOTAL BOX */
+/* TOTAL BOX */
 .totalBox{
     background:#f7f7f7;
     padding:12px;
@@ -60,7 +57,7 @@ body{
     margin-top:10px;
 }
 
-/* INPUTS */
+/* INPUT */
 input,select,button{
     width:100%;
     padding:12px;
@@ -96,13 +93,18 @@ button{
     background:#f0f6ff;
 }
 
-/* ITEMS */
+/* ITEM */
 .item{
     background:#fafafa;
     padding:10px;
     margin-top:10px;
     border-radius:10px;
     border:1px solid #eee;
+}
+
+.item button{
+    width:48%;
+    margin-top:8px;
 }
 
 h3{
@@ -116,20 +118,20 @@ h3{
 
 <div class="app">
 
-<!-- LEFT PANEL -->
-<div class="panel leftPanel">
+<!-- LEFT -->
+<div class="panel">
 
 <h3>Total</h3>
 
 <div class="totalBox">
 <div>Total Qty: <span id="totalItems">0</span></div>
-<div>MRP Total: ₹<span id="mrpTotal">0</span></div>
-<div>Bill Total: ₹<span id="billTotal">0</span></div>
+<div>MRP: ₹<span id="mrpTotal">0</span></div>
+<div>Bill: ₹<span id="billTotal">0</span></div>
 </div>
 
 </div>
 
-<!-- CENTER PANEL -->
+<!-- CENTER -->
 <div class="panel centerPanel">
 
 <h3>Billing</h3>
@@ -145,7 +147,7 @@ h3{
 
 </div>
 
-<!-- RIGHT PANEL -->
+<!-- RIGHT -->
 <div class="panel rightPanel">
 
 <h3>Items</h3>
@@ -158,18 +160,18 @@ h3{
 
 <script>
 
-/* ===== DATA ===== */
+/* DATA */
 let productCatalog = [];
 let items = [];
 let selectedProduct = null;
 
-/* ===== ELEMENTS ===== */
+/* ELEMENTS */
 const itemName = document.getElementById("itemName");
 const itemQty = document.getElementById("itemQty");
 const suggestionsBox = document.getElementById("suggestionsBox");
 const productFile = document.getElementById("productFile");
 
-/* ===== EXCEL UPLOAD ===== */
+/* EXCEL UPLOAD */
 productFile.addEventListener("change", function(e){
 
     let file = e.target.files[0];
@@ -193,7 +195,7 @@ productFile.addEventListener("change", function(e){
     reader.readAsArrayBuffer(file);
 });
 
-/* ===== EXCEL PARSER (YOUR FORMAT) ===== */
+/* PARSE EXCEL */
 function parseExcel(data){
 
     productCatalog = [];
@@ -227,7 +229,7 @@ function parseExcel(data){
     alert("Excel Loaded Successfully");
 }
 
-/* ===== SEARCH ===== */
+/* SEARCH */
 itemName.addEventListener("input", function(){
 
     let search = itemName.value.toLowerCase();
@@ -235,12 +237,10 @@ itemName.addEventListener("input", function(){
 
     if(search === "") return;
 
-    let filtered = productCatalog.filter(p => {
-        return (
-            (p.displayName || "").toLowerCase().includes(search) ||
-            (p.code || "").toLowerCase().includes(search)
-        );
-    });
+    let filtered = productCatalog.filter(p =>
+        (p.displayName || "").toLowerCase().includes(search) ||
+        (p.code || "").toLowerCase().includes(search)
+    );
 
     filtered.slice(0,20).forEach(product => {
 
@@ -263,7 +263,7 @@ itemName.addEventListener("input", function(){
     });
 });
 
-/* ===== ADD ITEM ===== */
+/* ADD ITEM */
 function addItem(){
 
     if(!selectedProduct){
@@ -294,7 +294,7 @@ function addItem(){
     totals();
 }
 
-/* ===== RENDER ITEMS ===== */
+/* RENDER */
 function render(){
 
     let list = document.getElementById("itemList");
@@ -306,16 +306,49 @@ function render(){
         div.className = "item";
 
         div.innerHTML = `
-            ${index+1}. ${i.name}<br>
+            <b>${index+1}. ${i.name}</b><br>
             Qty: ${i.qty} | ₹${i.sale}<br>
-            Total: ₹${i.total.toFixed(2)}
+            Total: ₹${i.total.toFixed(2)}<br>
+
+            <button onclick="editItem(${index})" style="background:#ffc107;color:black;">
+                Edit
+            </button>
+
+            <button onclick="deleteItem(${index})" style="background:#dc3545;">
+                Delete
+            </button>
         `;
 
         list.appendChild(div);
     });
 }
 
-/* ===== TOTALS ===== */
+/* DELETE */
+function deleteItem(index){
+    items.splice(index,1);
+    render();
+    totals();
+}
+
+/* EDIT */
+function editItem(index){
+
+    let item = items[index];
+
+    itemName.value = item.name;
+    itemQty.value = item.qty;
+
+    selectedProduct = productCatalog.find(
+        p => p.displayName === item.name
+    );
+
+    items.splice(index,1);
+
+    render();
+    totals();
+}
+
+/* TOTALS */
 function totals(){
 
     let mrpTotal = 0;
