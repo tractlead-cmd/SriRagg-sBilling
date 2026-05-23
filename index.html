@@ -8,7 +8,7 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>Billing App</title>
+<title>SriRagg's Billing App</title>
 
 <!-- POPPINS FONT -->
 
@@ -22,7 +22,7 @@ crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
 rel="stylesheet">
 
-<!-- EXCEL LIBRARY -->
+<!-- EXCEL SUPPORT -->
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -36,11 +36,11 @@ body{
 }
 
 .container{
-    max-width:400px;
+    max-width:420px;
     margin:auto;
     background:white;
     padding:20px;
-    border-radius:12px;
+    border-radius:14px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
     transition:0.3s;
 }
@@ -64,10 +64,8 @@ body{
 }
 
 #dateTime{
-    margin:0;
     font-size:13px;
     color:gray;
-    white-space:nowrap;
 }
 
 .menuButtons{
@@ -84,28 +82,16 @@ body{
     font-size:18px;
 }
 
-.darkBtn{
-    background:#222;
-}
-
-.darkBtn:hover{
-    background:#000;
-}
-
 .whatsappBtn{
     background:#25D366;
-}
-
-.whatsappBtn:hover{
-    background:#1da851;
 }
 
 .resetBtn{
     background:#dc3545;
 }
 
-.resetBtn:hover{
-    background:#b02a37;
+.darkBtn{
+    background:#222;
 }
 
 input,
@@ -116,7 +102,7 @@ button{
     border-radius:8px;
     border:1px solid #ccc;
     box-sizing:border-box;
-    font-size:16px;
+    font-size:15px;
 }
 
 button{
@@ -127,33 +113,30 @@ button{
 }
 
 button:hover{
-    background:#0056b3;
+    opacity:0.9;
 }
 
 .totalBox{
     margin-top:15px;
     margin-bottom:15px;
-    padding:12px 15px;
+    padding:12px;
     background:#f0f0f0;
     border-radius:10px;
 }
 
 .totalBox h3{
-    margin:4px 0;
-    font-size:16px;
+    margin:5px 0;
+    font-size:15px;
 }
 
 #itemList{
     max-height:300px;
     overflow-y:auto;
-    margin-top:10px;
-    padding-right:5px;
 }
 
 .item{
     display:flex;
     justify-content:space-between;
-    align-items:flex-start;
     padding:10px 0;
     border-bottom:1px solid #eee;
     font-size:14px;
@@ -169,20 +152,14 @@ button:hover{
 .editBtn{
     background:#ffc107;
     color:black;
-    border:none;
-    padding:6px 10px;
-    border-radius:5px;
-    cursor:pointer;
+    padding:5px 10px;
     font-size:12px;
 }
 
 .deleteBtn{
     background:#dc3545;
     color:white;
-    border:none;
-    padding:6px 10px;
-    border-radius:5px;
-    cursor:pointer;
+    padding:5px 10px;
     font-size:12px;
 }
 
@@ -190,8 +167,7 @@ button:hover{
     background:white;
     border:1px solid #ccc;
     border-radius:8px;
-    margin-top:2px;
-    max-height:200px;
+    max-height:220px;
     overflow-y:auto;
 }
 
@@ -199,7 +175,6 @@ button:hover{
     padding:10px;
     cursor:pointer;
     border-bottom:1px solid #eee;
-    font-size:14px;
 }
 
 .suggestionItem:hover{
@@ -225,10 +200,6 @@ button:hover{
     background:#333;
 }
 
-.darkMode #dateTime{
-    color:#ccc;
-}
-
 .darkMode #suggestionsBox{
     background:#333;
     color:white;
@@ -241,6 +212,10 @@ button:hover{
 
 .darkMode .suggestionItem:hover{
     background:#444;
+}
+
+.darkMode #dateTime{
+    color:#ccc;
 }
 
 </style>
@@ -282,7 +257,7 @@ button:hover{
 
     </div>
 
-    <!-- CSV / EXCEL UPLOAD -->
+    <!-- CSV / EXCEL -->
 
     <input type="file"
     id="productFile"
@@ -298,13 +273,11 @@ button:hover{
     id="customerPhone"
     placeholder="WhatsApp Number">
 
-    <!-- ITEM -->
+    <!-- PRODUCT -->
 
     <input type="text"
     id="itemName"
     placeholder="Search Product">
-
-    <!-- AUTOCOMPLETE -->
 
     <div id="suggestionsBox"></div>
 
@@ -312,10 +285,6 @@ button:hover{
     id="itemQty"
     inputmode="numeric"
     placeholder="Quantity">
-
-    <input type="number"
-    id="itemPrice"
-    placeholder="Price Per Item">
 
     <button onclick="addItem()">
         Add Item
@@ -328,13 +297,15 @@ button:hover{
         <h3>
             Total Quantity:
             <span id="totalItems">0</span>
-            |
-            Unique:
+        </h3>
+
+        <h3>
+            Unique Items:
             <span id="uniqueItems">0</span>
         </h3>
 
         <h3>
-            Total Cost:
+            Grand Total:
             ₹<span id="totalCost">0.00</span>
         </h3>
 
@@ -348,12 +319,22 @@ button:hover{
 
 <script>
 
+/* =========================
+GLOBAL VARIABLES
+========================= */
+
 let items = [];
 
 let productCatalog = [];
 
+let selectedProduct = null;
+
 let invoiceCounter =
 localStorage.getItem("invoiceCounter") || 1;
+
+/* =========================
+ELEMENTS
+========================= */
 
 const itemName =
 document.getElementById("itemName");
@@ -361,16 +342,15 @@ document.getElementById("itemName");
 const itemQty =
 document.getElementById("itemQty");
 
-const itemPrice =
-document.getElementById("itemPrice");
-
 const suggestionsBox =
 document.getElementById("suggestionsBox");
 
 const productFile =
 document.getElementById("productFile");
 
-/* LOAD SAVED PRODUCT CATALOG */
+/* =========================
+LOAD SAVED CATALOG
+========================= */
 
 let savedCatalog =
 localStorage.getItem("productCatalog");
@@ -382,7 +362,9 @@ if(savedCatalog){
 
 }
 
-/* FILE UPLOAD */
+/* =========================
+FILE UPLOAD
+========================= */
 
 productFile.addEventListener("change",function(e){
 
@@ -404,10 +386,9 @@ productFile.addEventListener("change",function(e){
 
         reader.onload = function(event){
 
-            let csv =
-            event.target.result;
-
-            parseCSV(csv);
+            parseCSV(
+                event.target.result
+            );
 
         };
 
@@ -455,7 +436,7 @@ productFile.addEventListener("change",function(e){
                 {header:1}
             );
 
-            convertExcelData(jsonData);
+            parseExcel(jsonData);
 
         };
 
@@ -465,7 +446,9 @@ productFile.addEventListener("change",function(e){
 
 });
 
-/* CSV PARSER */
+/* =========================
+CSV PARSER
+========================= */
 
 function parseCSV(csv){
 
@@ -479,14 +462,21 @@ function parseCSV(csv){
         let row =
         lines[i].split(",");
 
-        if(row.length >= 4){
+        if(row.length >= 6){
 
             productCatalog.push({
 
                 code:row[0].trim(),
-                name:row[1].trim(),
-                unit:row[2].trim(),
-                price:parseFloat(row[3])
+
+                internalName:row[1].trim(),
+
+                displayName:row[2].trim(),
+
+                unit:row[3].trim(),
+
+                mrp:parseFloat(row[4]),
+
+                salePrice:parseFloat(row[5])
 
             });
 
@@ -497,14 +487,16 @@ function parseCSV(csv){
     saveCatalog();
 
     alert(
-    "CSV Products Loaded Successfully"
+    "CSV Loaded Successfully"
     );
 
 }
 
-/* EXCEL PARSER */
+/* =========================
+EXCEL PARSER
+========================= */
 
-function convertExcelData(data){
+function parseExcel(data){
 
     productCatalog = [];
 
@@ -512,14 +504,21 @@ function convertExcelData(data){
 
         let row = data[i];
 
-        if(row.length >= 4){
+        if(row.length >= 6){
 
             productCatalog.push({
 
                 code:String(row[0]).trim(),
-                name:String(row[1]).trim(),
-                unit:String(row[2]).trim(),
-                price:parseFloat(row[3])
+
+                internalName:String(row[1]).trim(),
+
+                displayName:String(row[2]).trim(),
+
+                unit:String(row[3]).trim(),
+
+                mrp:parseFloat(row[4]),
+
+                salePrice:parseFloat(row[5])
 
             });
 
@@ -530,12 +529,14 @@ function convertExcelData(data){
     saveCatalog();
 
     alert(
-    "Excel Products Loaded Successfully"
+    "Excel Loaded Successfully"
     );
 
 }
 
-/* SAVE CATALOG */
+/* =========================
+SAVE CATALOG
+========================= */
 
 function saveCatalog(){
 
@@ -549,7 +550,9 @@ function saveCatalog(){
 
 }
 
-/* AUTOCOMPLETE */
+/* =========================
+AUTOCOMPLETE
+========================= */
 
 itemName.addEventListener("input",function(){
 
@@ -565,7 +568,19 @@ itemName.addEventListener("input",function(){
     let filtered =
     productCatalog.filter(product =>
 
-        product.name
+        product.displayName
+        .toLowerCase()
+        .includes(search)
+
+        ||
+
+        product.code
+        .toLowerCase()
+        .includes(search)
+
+        ||
+
+        product.internalName
         .toLowerCase()
         .includes(search)
 
@@ -584,27 +599,25 @@ itemName.addEventListener("input",function(){
 
         "<strong>" +
 
-        product.code +
+        product.displayName +
 
-        "</strong> - " +
+        "</strong><br>" +
 
-        product.name +
+        "MRP ₹" +
 
-        " (" +
+        product.mrp +
 
-        product.unit +
+        " | Sale ₹" +
 
-        ") - ₹" +
-
-        product.price;
+        product.salePrice;
 
         div.onclick = function(){
 
-            itemName.value =
-            product.name;
+            selectedProduct =
+            product;
 
-            itemPrice.value =
-            product.price;
+            itemName.value =
+            product.displayName;
 
             suggestionsBox.innerHTML="";
 
@@ -619,13 +632,18 @@ itemName.addEventListener("input",function(){
 
 });
 
-/* KEYBOARD SHORTCUTS */
+/* =========================
+KEYBOARD SHORTCUTS
+========================= */
 
 itemName.addEventListener("keydown",function(e){
 
     if(e.key==="Enter"){
+
         e.preventDefault();
+
         itemQty.focus();
+
     }
 
 });
@@ -633,60 +651,51 @@ itemName.addEventListener("keydown",function(e){
 itemQty.addEventListener("keydown",function(e){
 
     if(e.key==="Enter"){
+
         e.preventDefault();
+
         addItem();
+
     }
 
 });
 
-document.addEventListener("keydown",function(e){
-
-    if(e.altKey && e.key==="Enter"){
-        resetBill();
-    }
-
-    if(e.ctrlKey && e.key==="Enter"){
-        sendWhatsApp();
-    }
-
-});
-
-/* ADD ITEM */
+/* =========================
+ADD ITEM
+========================= */
 
 function addItem(){
 
-    let name =
-    itemName.value.trim();
-
-    let qty =
-    parseFloat(itemQty.value);
-
-    let price =
-    parseFloat(itemPrice.value);
-
-    if(isNaN(qty) || isNaN(price)){
+    if(!selectedProduct){
 
         alert(
-        "Please enter quantity and price"
+        "Please select product from list"
         );
 
         return;
 
     }
 
+    let qty =
+    parseFloat(itemQty.value);
+
+    if(isNaN(qty)){
+
+        alert("Enter quantity");
+
+        return;
+
+    }
+
     let total =
-    qty * price;
+    qty *
+    selectedProduct.salePrice;
 
     let existingItem =
     items.find(item =>
 
-        item.name.toLowerCase()
-        ===
-        name.toLowerCase()
-
-        &&
-
-        item.price === price
+        item.code ===
+        selectedProduct.code
 
     );
 
@@ -695,16 +704,30 @@ function addItem(){
         existingItem.qty += qty;
 
         existingItem.total =
-        existingItem.qty *
-        existingItem.price;
 
-    }else{
+        existingItem.qty *
+
+        existingItem.salePrice;
+
+    }
+
+    else{
 
         items.push({
 
-            name:name,
+            code:selectedProduct.code,
+
+            displayName:
+            selectedProduct.displayName,
+
+            mrp:
+            selectedProduct.mrp,
+
+            salePrice:
+            selectedProduct.salePrice,
+
             qty:qty,
-            price:price,
+
             total:total
 
         });
@@ -715,19 +738,20 @@ function addItem(){
 
     updateTotals();
 
-    saveToLocalStorage();
+    saveBill();
 
     itemName.value="";
     itemQty.value="";
-    itemPrice.value="";
 
-    suggestionsBox.innerHTML="";
+    selectedProduct = null;
 
     itemName.focus();
 
 }
 
-/* DISPLAY ITEMS */
+/* =========================
+DISPLAY ITEMS
+========================= */
 
 function displayItems(){
 
@@ -743,14 +767,26 @@ function displayItems(){
 
         div.className="item";
 
-        div.innerHTML=`
+        div.innerHTML = `
 
         <div>
 
-        <strong>${item.name}</strong><br>
+        <strong>
+        ${index+1}. ${item.displayName}
+        </strong>
+
+        <br>
+
+        MRP: ₹${item.mrp}
+
+        <br>
 
         Qty: ${item.qty}
-        × ₹${item.price}
+
+        <br>
+
+        Selling Price:
+        ₹${item.salePrice}
 
         </div>
 
@@ -760,16 +796,14 @@ function displayItems(){
 
         <div class="itemButtons">
 
-        <button
-        class="editBtn"
+        <button class="editBtn"
         onclick="editItem(${index})">
 
         Edit
 
         </button>
 
-        <button
-        class="deleteBtn"
+        <button class="deleteBtn"
         onclick="removeItem(${index})">
 
         Delete
@@ -788,15 +822,26 @@ function displayItems(){
 
 }
 
-/* EDIT */
+/* =========================
+EDIT ITEM
+========================= */
 
 function editItem(index){
 
     let item = items[index];
 
-    itemName.value = item.name;
-    itemQty.value = item.qty;
-    itemPrice.value = item.price;
+    itemName.value =
+    item.displayName;
+
+    itemQty.value =
+    item.qty;
+
+    selectedProduct =
+    productCatalog.find(product =>
+
+        product.code === item.code
+
+    );
 
     items.splice(index,1);
 
@@ -804,11 +849,13 @@ function editItem(index){
 
     updateTotals();
 
-    saveToLocalStorage();
+    saveBill();
 
 }
 
-/* DELETE */
+/* =========================
+REMOVE ITEM
+========================= */
 
 function removeItem(index){
 
@@ -818,41 +865,47 @@ function removeItem(index){
 
     updateTotals();
 
-    saveToLocalStorage();
+    saveBill();
 
 }
 
-/* TOTALS */
+/* =========================
+TOTALS
+========================= */
 
 function updateTotals(){
 
-    let totalCost = 0;
+    let grandTotal = 0;
 
-    let totalItems = 0;
+    let totalQty = 0;
 
-    let uniqueItems = items.length;
+    items.forEach(item => {
 
-    items.forEach((item)=>{
+        grandTotal += item.total;
 
-        totalCost += item.total;
-        totalItems += item.qty;
+        totalQty += item.qty;
 
     });
 
     document.getElementById("totalCost")
-    .innerText = totalCost.toFixed(2);
+    .innerText =
+    grandTotal.toFixed(2);
 
     document.getElementById("totalItems")
-    .innerText = totalItems;
+    .innerText =
+    totalQty;
 
     document.getElementById("uniqueItems")
-    .innerText = uniqueItems;
+    .innerText =
+    items.length;
 
 }
 
-/* SAVE BILL */
+/* =========================
+SAVE BILL
+========================= */
 
-function saveToLocalStorage(){
+function saveBill(){
 
     localStorage.setItem(
 
@@ -864,7 +917,9 @@ function saveToLocalStorage(){
 
 }
 
-/* WHATSAPP */
+/* =========================
+WHATSAPP
+========================= */
 
 function sendWhatsApp(){
 
@@ -882,90 +937,92 @@ function sendWhatsApp(){
     let phone =
     document.getElementById("customerPhone").value;
 
-    let totalCost = 0;
+    let grandTotal = 0;
 
-    let totalItems = 0;
+    let totalSavings = 0;
 
-    let now = new Date();
+    let message =
 
-    let invoiceNumber =
+    "Sri Raghavendra Grocery\n\n";
 
-    "SRG-" +
+    message +=
+
+    "Invoice No: SRG-" +
 
     String(invoiceCounter)
     .padStart(4,"0");
 
-    let billDate =
-    now.toLocaleDateString("en-IN",{
-
-        weekday:"long",
-        day:"2-digit",
-        month:"short",
-        year:"numeric"
-
-    });
-
-    let billTime =
-    now.toLocaleTimeString("en-IN",{
-
-        hour:"numeric",
-        minute:"2-digit"
-
-    });
-
-    let message =
-
-    "Sri Raghavendra Grocery\n\n" +
-
-    "Invoice No: " +
-    invoiceNumber +
-
+    message +=
     "\n\nCustomer: " +
-    customer +
+    customer;
 
-    "\n\nDate: " +
-    billDate +
-
-    "\nTime: " +
-    billTime +
-
+    message +=
     "\n\n";
 
-    items.forEach((item)=>{
+    items.forEach((item,index)=>{
+
+        let savings =
+
+        (item.mrp -
+
+        item.salePrice)
+
+        *
+
+        item.qty;
+
+        totalSavings += savings;
+
+        grandTotal += item.total;
 
         message +=
 
-        item.name +
+        (index+1) +
 
-        " | Qty: " +
+        ". " +
 
-        item.qty +
-
-        " | ₹" +
-
-        item.total.toFixed(2) +
+        item.displayName +
 
         "\n";
 
-        totalCost += item.total;
-        totalItems += item.qty;
+        message +=
+        "MRP: ₹" +
+        item.mrp +
+        "\n";
+
+        message +=
+        "Qty: " +
+        item.qty +
+        "\n";
+
+        message +=
+        "Selling Price: ₹" +
+        item.salePrice +
+        "\n";
+
+        message +=
+        "Total: ₹" +
+        item.total.toFixed(2) +
+        "\n\n";
 
     });
 
     message +=
-    "\n------------------\n";
+    "--------------------------------\n\n";
 
     message +=
-    "Total Quantity: " +
-    totalItems + "\n";
+    "Grand Total: ₹" +
+    grandTotal.toFixed(2);
 
     message +=
-    "Unique Items: " +
-    items.length + "\n";
+    "\n\n..............................\n\n";
 
     message +=
-    "Total Cost: ₹" +
-    totalCost.toFixed(2);
+    "Your Savings: ₹" +
+    totalSavings.toFixed(2);
+
+    message +=
+    "\n\nThank You\nVisit Us Again";
 
     let url =
 
@@ -988,7 +1045,9 @@ function sendWhatsApp(){
 
 }
 
-/* RESET */
+/* =========================
+RESET BILL
+========================= */
 
 function resetBill(){
 
@@ -998,19 +1057,18 @@ function resetBill(){
 
     updateTotals();
 
-    saveToLocalStorage();
+    saveBill();
 
     itemName.value="";
     itemQty.value="";
-    itemPrice.value="";
 
-    suggestionsBox.innerHTML="";
-
-    itemName.focus();
+    selectedProduct = null;
 
 }
 
-/* DARK MODE */
+/* =========================
+DARK MODE
+========================= */
 
 function toggleDarkMode(){
 
@@ -1029,7 +1087,9 @@ function toggleDarkMode(){
             "enabled"
         );
 
-    }else{
+    }
+
+    else{
 
         localStorage.setItem(
             "darkMode",
@@ -1040,7 +1100,9 @@ function toggleDarkMode(){
 
 }
 
-/* DATE TIME */
+/* =========================
+DATE TIME
+========================= */
 
 function updateDateTime(){
 
@@ -1049,9 +1111,13 @@ function updateDateTime(){
     let options = {
 
         weekday:"short",
+
         day:"2-digit",
+
         month:"short",
+
         hour:"numeric",
+
         minute:"2-digit"
 
     };
@@ -1068,7 +1134,9 @@ function updateDateTime(){
 
 setInterval(updateDateTime,60000);
 
-/* LOAD */
+/* =========================
+LOAD APP
+========================= */
 
 window.onload = function(){
 
@@ -1104,4 +1172,5 @@ window.onload = function(){
 </script>
 
 </body>
+
 </html>
