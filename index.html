@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SuperMarket POS Dashboard</title>
+<title>Super POS Pro Fixed</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -16,146 +16,87 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-    font-family:'Poppins',sans-serif;
-    background:#f5f5f5;
+font-family:Poppins;
+background:#f5f5f5;
 }
 
-body.dark{
-    background:#111;
-    color:white;
-}
+body.dark{background:#111;color:white;}
 
-.app{
-    display:flex;
-    gap:12px;
-    padding:12px;
-    height:100vh;
-}
+.app{display:flex;gap:10px;padding:12px;height:100vh;}
 
-/* PANELS */
 .panel{
-    flex:1;
-    background:white;
-    border-radius:16px;
-    padding:15px;
-    box-shadow:0 0 12px rgba(0,0,0,0.08);
-    display:flex;
-    flex-direction:column;
+flex:1;
+background:white;
+padding:15px;
+border-radius:15px;
+box-shadow:0 0 10px rgba(0,0,0,0.08);
+display:flex;
+flex-direction:column;
 }
 
-body.dark .panel{
-    background:#1e1e1e;
-}
+body.dark .panel{background:#1e1e1e;}
 
-/* CENTER BIGGER */
 .center{flex:1.3;}
 
-#itemList{
-    flex:1;
-    overflow:auto;
-    margin-top:10px;
-}
-
-/* INPUT */
 input,button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #ccc;
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #ccc;
 }
 
-body.dark input{
-    background:#2a2a2a;
-    color:white;
-}
+body.dark input{background:#2a2a2a;color:white;}
 
-/* BUTTONS */
-button{
-    background:#007bff;
-    color:white;
-    border:none;
-    cursor:pointer;
-}
+button{background:#007bff;color:white;border:none;cursor:pointer;}
 
-/* SUGGESTIONS */
 #suggestionsBox{
-    max-height:200px;
-    overflow:auto;
-    border:1px solid #ddd;
-    margin-top:5px;
+border:1px solid #ddd;
+max-height:200px;
+overflow:auto;
 }
 
 .suggestionItem{
-    padding:10px;
-    border-bottom:1px solid #eee;
-    cursor:pointer;
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
 }
 
 .selected{background:#007bff;color:white;}
 
-/* ITEM */
 .item{
-    background:#f7f7f7;
-    padding:10px;
-    margin-top:10px;
-    border-radius:10px;
+background:#f7f7f7;
+padding:10px;
+margin-top:10px;
+border-radius:10px;
 }
 
 body.dark .item{background:#2a2a2a;}
 
-/* SUMMARY */
-.summaryBox{
-    background:#f7f7f7;
-    padding:12px;
-    border-radius:12px;
+/* ROUND DASHBOARD */
+.circleWrap{
+display:flex;
+justify-content:center;
+align-items:center;
+margin-top:15px;
 }
 
-body.dark .summaryBox{background:#2a2a2a;}
-
-/* ACTION BUTTONS */
-.actionRow{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:8px;
-    margin-top:10px;
+.circle{
+width:220px;
+height:220px;
+border-radius:50%;
+background:conic-gradient(#007bff 0% 25%, #28a745 25% 50%, #ffc107 50% 75%, #dc3545 75% 100%);
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+color:white;
+font-weight:600;
+text-align:center;
 }
 
-.actionRow button{
-    padding:10px;
-    font-size:13px;
-}
-
-/* DASHBOARD */
-.dashboard{
-    margin-top:15px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-}
-
-.card{
-    background:#eee;
-    padding:12px;
-    border-radius:50%;
-    width:120px;
-    height:120px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    margin:auto;
-}
-
-body.dark .card{
-    background:#333;
-}
-
-/* REPORT */
-.reportBtn{
-    margin-top:10px;
-    background:green;
+.circle small{
+font-size:12px;
 }
 
 </style>
@@ -170,64 +111,36 @@ body.dark .card{
 
 <h3>SUMMARY</h3>
 
-<div class="summaryBox">
-<div>Total Qty: <span id="totalItems">0</span></div>
-<div>MRP: ₹<span id="mrpTotal">0</span></div>
-<div>Bill: ₹<span id="billTotal">0</span></div>
-<div>Savings: ₹<span id="savings">0</span></div>
+<div>
+Qty: <span id="qtyT">0</span><br>
+MRP: ₹<span id="mrpT">0</span><br>
+Bill: ₹<span id="billT">0</span><br>
+Savings: ₹<span id="savT">0</span>
 </div>
 
-<!-- ACTION BUTTONS -->
-<div class="actionRow">
+<button onclick="toggleDark()">Dark</button>
+<button onclick="resetBill()">Reset</button>
+<button onclick="sendWhatsApp()">WhatsApp</button>
 
-<button onclick="sendWhatsApp()">📤</button>
-<button onclick="resetBill()">🗑</button>
-<button onclick="toggleDark()">🌙</button>
-
+<div class="circleWrap">
+<div class="circle" id="circle">
+Loading...
+</div>
 </div>
 
-<!-- DASHBOARD -->
-<h3 style="margin-top:15px;">Category Dashboard</h3>
-
-<div class="dashboard">
-
-<div class="card">
-<b>Rice</b>
-<span id="riceSales">0</span>
-</div>
-
-<div class="card">
-<b>Oil</b>
-<span id="oilSales">0</span>
-</div>
-
-<div class="card">
-<b>Sugar</b>
-<span id="sugarSales">0</span>
-</div>
-
-<div class="card">
-<b>Other</b>
-<span id="otherSales">0</span>
-</div>
-
-</div>
-
-<button class="reportBtn" onclick="downloadReport()">📥 Download Excel Report</button>
+<button onclick="download()">Download Excel</button>
 
 </div>
 
 <!-- CENTER -->
 <div class="panel center">
 
-<h3>Billing</h3>
-
 <input type="file" id="file">
 
-<input type="text" id="search" placeholder="Search product">
+<input type="text" id="search" placeholder="Search">
 <div id="suggestionsBox"></div>
 
-<input type="text" id="qty" placeholder="Qty (100g / 1kg / 2ltr / pcs)">
+<input type="text" id="qty" placeholder="Qty (100g / 1kg / 2ltr)">
 
 <button onclick="addItem()">Add Item</button>
 
@@ -237,7 +150,7 @@ body.dark .card{
 <div class="panel">
 
 <h3>ITEMS</h3>
-<div id="itemList"></div>
+<div id="list"></div>
 
 </div>
 
@@ -251,56 +164,43 @@ let selected=null;
 let index=-1;
 
 /* DARK */
-if(localStorage.getItem("dark")==="1"){
+if(localStorage.getItem("dark")==="1")
 document.body.classList.add("dark");
-}
 
 /* EXCEL */
-document.getElementById("file").addEventListener("change",e=>{
-
-let file=e.target.files[0];
-let reader=new FileReader();
-
-reader.onload=ev=>{
-
+file.onchange=e=>{
+let r=new FileReader();
+r.onload=ev=>{
 let data=new Uint8Array(ev.target.result);
 let wb=XLSX.read(data,{type:"array"});
-let sheet=wb.Sheets[wb.SheetNames[0]];
-let json=XLSX.utils.sheet_to_json(sheet,{header:1});
+let sh=wb.Sheets[wb.SheetNames[0]];
+let j=XLSX.utils.sheet_to_json(sh,{header:1});
 
 products=[];
 
-for(let i=1;i<json.length;i++){
-
-let r=json[i];
-if(!r) continue;
+for(let i=1;i<j.length;i++){
+let x=j[i];
+if(!x) continue;
 
 products.push({
-code:r[1],
-name:r[4],
-category:r[0],
-unit:(r[5]||"").toLowerCase(),
-mrp:Number(r[7])||0,
-sale:Number(r[8])||0
+code:x[1],
+name:x[4],
+cat:x[0],
+unit:x[5],
+mrp:+x[7]||0,
+sale:+x[8]||0
 });
-
 }
 
 alert("Loaded");
-
+}
+r.readAsArrayBuffer(e.target.files[0]);
 };
 
-reader.readAsArrayBuffer(file);
-
-});
-
 /* SEARCH */
-let box=document.getElementById("suggestionsBox");
-
-document.getElementById("search").addEventListener("input",e=>{
-
+search.oninput=e=>{
 let v=e.target.value.toLowerCase();
-box.innerHTML="";
+suggestionsBox.innerHTML="";
 index=-1;
 
 if(!v) return;
@@ -309,28 +209,54 @@ products.filter(p=>
 (p.name||"").toLowerCase().includes(v)||
 (p.code||"").toLowerCase().includes(v)
 ).slice(0,15).forEach(p=>{
-
 let d=document.createElement("div");
 d.className="suggestionItem";
-d.innerHTML=p.name;
-d.onclick=()=>select(p);
-box.appendChild(d);
-
+d.innerText=p.name;
+d.onclick=()=>pick(p);
+suggestionsBox.appendChild(d);
 });
+};
 
-});
+/* ARROW FIX */
+search.onkeydown=e=>{
+let s=document.querySelectorAll(".suggestionItem");
 
-/* SELECT */
-function select(p){
-selected=p;
-document.getElementById("search").value=p.name;
-box.innerHTML="";
-document.getElementById("qty").focus();
+if(e.key==="ArrowDown"){index++;hl(s);}
+if(e.key==="ArrowUp"){index--;hl(s);}
+
+if(e.key==="Enter"){
+e.preventDefault();
+if(s[index]) s[index].click();
+else qty.focus();
+}
+};
+
+function hl(s){
+s.forEach(i=>i.classList.remove("selected"));
+if(s[index]){
+s[index].classList.add("selected");
+s[index].scrollIntoView({block:"nearest"});
+}
 }
 
-/* QTY */
-function parseQty(v){
+/* PICK */
+function pick(p){
+selected=p;
+search.value=p.name;
+suggestionsBox.innerHTML="";
+qty.focus();
+}
 
+/* QTY ENTER FIX (IMPORTANT) */
+qty.onkeydown=e=>{
+if(e.key==="Enter"){
+e.preventDefault();
+addItem();
+}
+};
+
+/* QTY PARSE */
+function parse(v){
 v=(v||"").toLowerCase();
 let n=parseFloat(v);
 if(isNaN(n)) return 0;
@@ -341,7 +267,6 @@ if(v.includes("ltr")) return n*1000;
 if(v.includes("ml")) return n;
 
 return n;
-
 }
 
 /* ADD */
@@ -349,133 +274,93 @@ function addItem(){
 
 if(!selected) return alert("Select product");
 
-let qty=parseQty(document.getElementById("qty").value);
-
-if(!qty) return alert("Invalid qty");
+let q=parse(v=qty.value);
+if(!q) return alert("Invalid qty");
 
 let ex=items.find(i=>i.code===selected.code);
 
 if(ex){
-ex.qty+=qty;
+ex.qty+=q;
 ex.total=ex.qty*ex.sale;
 }else{
 items.push({
 code:selected.code,
 name:selected.name,
-category:selected.category,
-qty,
-sale:selected.sale,
+cat:selected.cat,
+qty:q,
 mrp:selected.mrp,
-total:qty*selected.sale
+sale:selected.sale,
+total:q*selected.sale
 });
 }
 
 selected=null;
-document.getElementById("search").value="";
-document.getElementById("qty").value="";
-box.innerHTML="";
+search.value="";
+qty.value="";
+suggestionsBox.innerHTML="";
 
 render();
-totals();
+calc();
 dashboard();
 
-document.getElementById("search").focus();
-
+search.focus();
 }
 
 /* RENDER */
 function render(){
-
-let list=document.getElementById("itemList");
 list.innerHTML="";
 
-items.forEach((i,idx)=>{
-
-let div=document.createElement("div");
-div.className="item";
-
-div.innerHTML=`
+items.forEach(i=>{
+let d=document.createElement("div");
+d.className="item";
+d.innerHTML=`
 <b>${i.name}</b><br>
-Qty: ${i.qty}<br>
-₹${i.total.toFixed(2)}<br>
-
-<button onclick="edit(${idx})">Edit</button>
-<button onclick="del(${idx})" style="background:red;">Delete</button>
+Qty:${i.qty}<br>
+₹${i.total.toFixed(2)}
 `;
-
-list.appendChild(div);
-
+list.appendChild(d);
 });
-
-}
-
-/* EDIT */
-function edit(i){
-
-let it=items[i];
-
-document.getElementById("search").value=it.name;
-document.getElementById("qty").value=it.qty;
-
-selected=products.find(p=>p.code===it.code);
-
-items.splice(i,1);
-
-render();totals();dashboard();
-
-}
-
-/* DELETE */
-function del(i){
-items.splice(i,1);
-render();totals();dashboard();
 }
 
 /* TOTALS */
-function totals(){
+function calc(){
 
-let mrp=0,bill=0,qty=0;
+let m=0,b=0,q=0;
 
 items.forEach(i=>{
-mrp+=i.mrp*i.qty;
-bill+=i.total;
-qty+=i.qty;
+m+=i.mrp*i.qty;
+b+=i.total;
+q+=i.qty;
 });
 
-document.getElementById("mrpTotal").innerText=mrp.toFixed(2);
-document.getElementById("billTotal").innerText=bill.toFixed(2);
-document.getElementById("totalItems").innerText=qty;
-document.getElementById("savings").innerText=(mrp-bill).toFixed(2);
-
+qtyT.innerText=q;
+mrpT.innerText=m.toFixed(2);
+billT.innerText=b.toFixed(2);
+savT.innerText=(m-b).toFixed(2);
 }
 
-/* DASHBOARD */
+/* ROUND DASHBOARD (FIXED) */
 function dashboard(){
 
-let rice=0,oil=0,sugar=0,other=0;
+let map={};
 
 items.forEach(i=>{
-
-let c=(i.category||"").toLowerCase();
-
-if(c.includes("rice")) rice+=i.total;
-else if(c.includes("oil")) oil+=i.total;
-else if(c.includes("sugar")) sugar+=i.total;
-else other+=i.total;
-
+let c=i.cat||"Other";
+map[c]=(map[c]||0)+i.total;
 });
 
-document.getElementById("riceSales").innerText=rice.toFixed(0);
-document.getElementById("oilSales").innerText=oil.toFixed(0);
-document.getElementById("sugarSales").innerText=sugar.toFixed(0);
-document.getElementById("otherSales").innerText=other.toFixed(0);
+let html="";
+for(let k in map){
+html+=`${k}: ₹${map[k].toFixed(0)}\n`;
+}
 
+circle.innerText=html || "No Sales";
 }
 
 /* RESET */
 function resetBill(){
 items=[];
-render();totals();dashboard();
+render();calc();dashboard();
 }
 
 /* DARK */
@@ -486,31 +371,27 @@ localStorage.setItem("dark",document.body.classList.contains("dark")?1:0);
 
 /* WHATSAPP */
 function sendWhatsApp(){
-
 let msg="Bill:\n";
-
 items.forEach(i=>{
 msg+=`${i.name} x ${i.qty} = ₹${i.total}\n`;
 });
-
 window.open("https://wa.me/?text="+encodeURIComponent(msg));
-
 }
 
-/* REPORT EXPORT */
-function downloadReport(){
+/* DOWNLOAD */
+function download(){
 
 let data=[["Name","Category","Qty","Total"]];
 
 items.forEach(i=>{
-data.push([i.name,i.category,i.qty,i.total]);
+data.push([i.name,i.cat,i.qty,i.total]);
 });
 
 let wb=XLSX.utils.book_new();
 let ws=XLSX.utils.aoa_to_sheet(data);
 XLSX.utils.book_append_sheet(wb,ws,"Report");
-XLSX.writeFile(wb,"sales_report.xlsx");
 
+XLSX.writeFile(wb,"sales.xlsx");
 }
 
 </script>
