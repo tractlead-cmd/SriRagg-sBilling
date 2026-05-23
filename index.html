@@ -10,8 +10,6 @@ content="width=device-width, initial-scale=1.0">
 
 <title>SriRagg's Billing App</title>
 
-<!-- GOOGLE FONT -->
-
 <link rel="preconnect"
 href="https://fonts.googleapis.com">
 
@@ -22,15 +20,9 @@ crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
 rel="stylesheet">
 
-<!-- XLSX -->
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-
-/* =========================
-GLOBAL
-========================= */
 
 *{
     margin:0;
@@ -52,10 +44,6 @@ body{
     border-radius:18px;
     box-shadow:0 0 12px rgba(0,0,0,0.08);
 }
-
-/* =========================
-HEADER
-========================= */
 
 .header{
     display:flex;
@@ -102,10 +90,6 @@ HEADER
     background:#dc3545;
 }
 
-/* =========================
-FORM
-========================= */
-
 input,
 select,
 button{
@@ -125,10 +109,6 @@ button{
     cursor:pointer;
 }
 
-/* =========================
-SUGGESTIONS
-========================= */
-
 #suggestionsBox{
     background:white;
     border:1px solid #ddd;
@@ -147,10 +127,6 @@ SUGGESTIONS
 .suggestionItem:hover{
     background:#f0f0f0;
 }
-
-/* =========================
-TOTAL BOX
-========================= */
 
 .totalBox{
     margin-top:15px;
@@ -184,10 +160,6 @@ TOTAL BOX
     font-weight:600;
     margin-top:8px;
 }
-
-/* =========================
-ITEMS
-========================= */
 
 #itemList{
     margin-top:18px;
@@ -257,10 +229,6 @@ ITEMS
     font-size:13px;
 }
 
-/* =========================
-DARK MODE
-========================= */
-
 .darkMode{
     background:#111;
     color:white;
@@ -315,8 +283,6 @@ DARK MODE
 
 <div class="container">
 
-<!-- HEADER -->
-
 <div class="header">
 
 <div>
@@ -350,13 +316,9 @@ onclick="resetBill()">
 
 </div>
 
-<!-- FILE -->
-
 <input type="file"
 id="productFile"
-accept=".csv,.xlsx,.xls">
-
-<!-- CUSTOMER -->
+accept=".xlsx,.xls,.csv">
 
 <input type="text"
 id="customerName"
@@ -366,8 +328,6 @@ placeholder="Customer Name">
 id="customerPhone"
 placeholder="WhatsApp Number">
 
-<!-- CATEGORY -->
-
 <select id="categoryFilter">
 
 <option value="">
@@ -375,8 +335,6 @@ All Categories
 </option>
 
 </select>
-
-<!-- PRODUCT -->
 
 <input type="text"
 id="itemName"
@@ -391,8 +349,6 @@ placeholder="Quantity">
 <button onclick="addItem()">
 Add Item
 </button>
-
-<!-- TOTALS -->
 
 <div class="totalBox">
 
@@ -428,28 +384,19 @@ Your Savings ₹<span id="savings">0.00</span>
 
 </div>
 
-<!-- ITEMS -->
-
 <div id="itemList"></div>
 
 </div>
 
 <script>
 
-/* =========================
-GLOBAL
-========================= */
-
 let items = [];
+
 let productCatalog = [];
+
 let selectedProduct = null;
 
-let invoiceCounter =
-localStorage.getItem("invoiceCounter") || 1;
-
-/* =========================
-ELEMENTS
-========================= */
+/* ELEMENTS */
 
 const itemName =
 document.getElementById("itemName");
@@ -466,25 +413,7 @@ document.getElementById("categoryFilter");
 const productFile =
 document.getElementById("productFile");
 
-/* =========================
-LOAD SAVED CATALOG
-========================= */
-
-let savedCatalog =
-localStorage.getItem("productCatalog");
-
-if(savedCatalog){
-
-    productCatalog =
-    JSON.parse(savedCatalog);
-
-    loadCategories();
-
-}
-
-/* =========================
-UPLOAD FILE
-========================= */
+/* FILE UPLOAD */
 
 productFile.addEventListener("change",function(e){
 
@@ -528,9 +457,7 @@ productFile.addEventListener("change",function(e){
 
 });
 
-/* =========================
-PARSE EXCEL
-========================= */
+/* PARSE EXCEL */
 
 function parseExcel(data){
 
@@ -564,38 +491,15 @@ function parseExcel(data){
             unit:
             String(row[5] || "").trim(),
 
-            costPrice:
-            Number(row[6]) || 0,
-
             mrp:
             Number(row[7]) || 0,
 
             salePrice:
-            Number(row[8]) || 0,
-
-            stockQty:
-            Number(row[9]) || 0,
-
-            minimumQty:
-            Number(row[10]) || 0,
-
-            status:
-            String(row[11] || "Active").trim(),
-
-            gst:
-            Number(row[12]) || 0,
-
-            barcode:
-            String(row[13] || "").trim()
+            Number(row[8]) || 0
 
         });
 
     }
-
-    localStorage.setItem(
-        "productCatalog",
-        JSON.stringify(productCatalog)
-    );
 
     loadCategories();
 
@@ -603,9 +507,7 @@ function parseExcel(data){
 
 }
 
-/* =========================
-LOAD CATEGORIES
-========================= */
+/* LOAD CATEGORY */
 
 function loadCategories(){
 
@@ -613,6 +515,7 @@ function loadCategories(){
     '<option value="">All Categories</option>';
 
     let categories =
+
     [...new Set(
         productCatalog.map(
             p=>p.category
@@ -634,9 +537,7 @@ function loadCategories(){
 
 }
 
-/* =========================
-AUTOCOMPLETE
-========================= */
+/* SEARCH */
 
 itemName.addEventListener("input",function(){
 
@@ -724,10 +625,7 @@ itemName.addEventListener("input",function(){
 
 });
 
-
-/* =========================
-KEYBOARD SHORTCUTS
-========================= */
+/* KEYBOARD FLOW */
 
 itemName.addEventListener("keydown",function(e){
 
@@ -753,9 +651,7 @@ itemQty.addEventListener("keydown",function(e){
 
 });
 
-/* =========================
-ADD ITEM
-========================= */
+/* ADD ITEM */
 
 function addItem(){
 
@@ -834,16 +730,19 @@ function addItem(){
 
     updateTotals();
 
-    itemName.value="";
-    itemQty.value="";
+    itemName.value = "";
+
+    itemQty.value = "";
+
+    suggestionsBox.innerHTML = "";
 
     selectedProduct = null;
 
+    itemName.focus();
+
 }
 
-/* =========================
-DISPLAY ITEMS
-========================= */
+/* DISPLAY ITEMS */
 
 function displayItems(){
 
@@ -927,9 +826,7 @@ function displayItems(){
 
 }
 
-/* =========================
-EDIT ITEM
-========================= */
+/* EDIT */
 
 function editItem(index){
 
@@ -957,9 +854,7 @@ function editItem(index){
 
 }
 
-/* =========================
-DELETE ITEM
-========================= */
+/* DELETE */
 
 function removeItem(index){
 
@@ -971,14 +866,14 @@ function removeItem(index){
 
 }
 
-/* =========================
-TOTALS
-========================= */
+/* TOTALS */
 
 function updateTotals(){
 
     let grandTotal = 0;
+
     let mrpTotal = 0;
+
     let totalQty = 0;
 
     items.forEach(item=>{
@@ -1021,9 +916,7 @@ function updateTotals(){
 
 }
 
-/* =========================
-RESET BILL
-========================= */
+/* RESET */
 
 function resetBill(){
 
@@ -1035,9 +928,7 @@ function resetBill(){
 
 }
 
-/* =========================
-WHATSAPP
-========================= */
+/* WHATSAPP */
 
 function sendWhatsApp(){
 
@@ -1086,9 +977,7 @@ Thank You`;
 
 }
 
-/* =========================
-DARK MODE
-========================= */
+/* DARK MODE */
 
 function toggleDarkMode(){
 
@@ -1098,9 +987,7 @@ function toggleDarkMode(){
 
 }
 
-/* =========================
-DATE TIME
-========================= */
+/* DATE */
 
 function updateDateTime(){
 
