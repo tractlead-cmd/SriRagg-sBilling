@@ -10,7 +10,7 @@ content="width=device-width, initial-scale=1.0">
 
 <title>SriRagg's Billing App</title>
 
-<!-- FONT -->
+<!-- GOOGLE FONT -->
 
 <link rel="preconnect"
 href="https://fonts.googleapis.com">
@@ -27,6 +27,10 @@ rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
+
+/* =========================
+GLOBAL
+========================= */
 
 *{
     margin:0;
@@ -48,7 +52,12 @@ body{
     padding:18px;
     border-radius:18px;
     box-shadow:0 0 12px rgba(0,0,0,0.08);
+    transition:0.3s;
 }
+
+/* =========================
+HEADER
+========================= */
 
 .header{
     display:flex;
@@ -65,6 +74,7 @@ body{
 #dateTime{
     font-size:12px;
     color:gray;
+    margin-top:3px;
 }
 
 .topButtons{
@@ -94,6 +104,10 @@ body{
     background:#dc3545;
 }
 
+/* =========================
+FORM
+========================= */
+
 input,
 select,
 button{
@@ -103,6 +117,7 @@ button{
     border-radius:10px;
     border:1px solid #ccc;
     font-size:15px;
+    font-family:'Poppins',sans-serif;
 }
 
 button{
@@ -115,6 +130,10 @@ button{
 button:hover{
     opacity:0.92;
 }
+
+/* =========================
+SUGGESTIONS
+========================= */
 
 #suggestionsBox{
     background:white;
@@ -135,6 +154,10 @@ button:hover{
     background:#f0f0f0;
 }
 
+/* =========================
+TOTAL BOX
+========================= */
+
 .totalBox{
     margin-top:15px;
     padding:15px;
@@ -149,11 +172,16 @@ button:hover{
     font-size:15px;
 }
 
+.dotted{
+    border-bottom:2px dashed #000;
+    margin-top:12px;
+    margin-bottom:12px;
+}
+
 .grandTotal{
-    font-size:26px;
+    font-size:28px;
     font-weight:700;
     text-align:right;
-    margin-top:15px;
 }
 
 .savings{
@@ -163,11 +191,9 @@ button:hover{
     margin-top:8px;
 }
 
-.dotted{
-    border-bottom:2px dashed #000;
-    margin-top:12px;
-    margin-bottom:12px;
-}
+/* =========================
+ITEMS
+========================= */
 
 #itemList{
     margin-top:18px;
@@ -188,8 +214,8 @@ button:hover{
 }
 
 .itemName{
-    font-weight:600;
     font-size:15px;
+    font-weight:600;
 }
 
 .itemSub{
@@ -199,8 +225,8 @@ button:hover{
 }
 
 .itemPrice{
-    font-weight:600;
     font-size:18px;
+    font-weight:600;
 }
 
 .itemButtons{
@@ -223,6 +249,10 @@ button:hover{
     padding:8px;
     font-size:13px;
 }
+
+/* =========================
+DARK MODE
+========================= */
 
 .darkMode{
     background:#111;
@@ -278,6 +308,8 @@ button:hover{
 
 <div class="container">
 
+<!-- HEADER -->
+
 <div class="header">
 
 <div>
@@ -311,7 +343,7 @@ onclick="resetBill()">
 
 </div>
 
-<!-- FILE -->
+<!-- EXCEL -->
 
 <input type="file"
 id="productFile"
@@ -480,6 +512,8 @@ productFile.addEventListener("change",function(e){
     let fileName =
     file.name.toLowerCase();
 
+    /* CSV */
+
     if(fileName.endsWith(".csv")){
 
         let reader =
@@ -494,6 +528,8 @@ productFile.addEventListener("change",function(e){
         reader.readAsText(file);
 
     }
+
+    /* EXCEL */
 
     else{
 
@@ -536,60 +572,6 @@ productFile.addEventListener("change",function(e){
 });
 
 /* =========================
-PARSE CSV
-========================= */
-
-function parseCSV(csv){
-
-    let lines =
-    csv.split("\n");
-
-    productCatalog = [];
-
-    for(let i=1;i<lines.length;i++){
-
-        let row =
-        lines[i].split(",");
-
-        if(row.length >= 10){
-
-            productCatalog.push({
-
-                category:row[0].trim(),
-
-                code:row[1].trim(),
-
-                brand:row[2].trim(),
-
-                internalName:row[3].trim(),
-
-                displayName:row[4].trim(),
-
-                unit:row[5].trim(),
-
-                mrp:parseFloat(row[6]),
-
-                salePrice:parseFloat(row[7]),
-
-                stockQty:parseFloat(row[8]) || 0,
-
-                gst:parseFloat(row[9]) || 0
-
-            });
-
-        }
-
-    }
-
-    saveCatalog();
-
-    loadCategories();
-
-    alert("CSV Loaded");
-
-}
-
-/* =========================
 PARSE EXCEL
 ========================= */
 
@@ -601,33 +583,55 @@ function parseExcel(data){
 
         let row = data[i];
 
-        if(row.length >= 10){
-
-            productCatalog.push({
-
-                category:String(row[0]).trim(),
-
-                code:String(row[1]).trim(),
-
-                brand:String(row[2]).trim(),
-
-                internalName:String(row[3]).trim(),
-
-                displayName:String(row[4]).trim(),
-
-                unit:String(row[5]).trim(),
-
-                mrp:parseFloat(row[6]),
-
-                salePrice:parseFloat(row[7]),
-
-                stockQty:parseFloat(row[8]) || 0,
-
-                gst:parseFloat(row[9]) || 0
-
-            });
-
+        if(!row || row.length===0){
+            continue;
         }
+
+        productCatalog.push({
+
+            category:
+            String(row[0] || "").trim(),
+
+            code:
+            String(row[1] || "").trim(),
+
+            brand:
+            String(row[2] || "").trim(),
+
+            internalName:
+            String(row[3] || "").trim(),
+
+            displayName:
+            String(row[4] || "").trim(),
+
+            unit:
+            String(row[5] || "").trim(),
+
+            costPrice:
+            Number(row[6]) || 0,
+
+            mrp:
+            Number(row[7]) || 0,
+
+            salePrice:
+            Number(row[8]) || 0,
+
+            stockQty:
+            Number(row[9]) || 0,
+
+            minimumQty:
+            Number(row[10]) || 0,
+
+            status:
+            String(row[11] || "Active").trim(),
+
+            gst:
+            Number(row[12]) || 0,
+
+            barcode:
+            String(row[13] || "").trim()
+
+        });
 
     }
 
@@ -635,7 +639,81 @@ function parseExcel(data){
 
     loadCategories();
 
-    alert("Excel Loaded");
+    alert("Excel Loaded Successfully");
+
+}
+
+/* =========================
+PARSE CSV
+========================= */
+
+function parseCSV(csv){
+
+    let lines = csv.split("\n");
+
+    productCatalog = [];
+
+    for(let i=1;i<lines.length;i++){
+
+        let row = lines[i].split(",");
+
+        if(!row || row.length===0){
+            continue;
+        }
+
+        productCatalog.push({
+
+            category:
+            String(row[0] || "").trim(),
+
+            code:
+            String(row[1] || "").trim(),
+
+            brand:
+            String(row[2] || "").trim(),
+
+            internalName:
+            String(row[3] || "").trim(),
+
+            displayName:
+            String(row[4] || "").trim(),
+
+            unit:
+            String(row[5] || "").trim(),
+
+            costPrice:
+            Number(row[6]) || 0,
+
+            mrp:
+            Number(row[7]) || 0,
+
+            salePrice:
+            Number(row[8]) || 0,
+
+            stockQty:
+            Number(row[9]) || 0,
+
+            minimumQty:
+            Number(row[10]) || 0,
+
+            status:
+            String(row[11] || "Active").trim(),
+
+            gst:
+            Number(row[12]) || 0,
+
+            barcode:
+            String(row[13] || "").trim()
+
+        });
+
+    }
+
+    saveCatalog();
+
+    loadCategories();
+
+    alert("CSV Loaded Successfully");
 
 }
 
@@ -756,13 +834,13 @@ itemName.addEventListener("input",function(){
 
         <br>
 
-        ${product.brand}
-        | ${product.unit}
+        ${product.brand || "-"}
+        | ${product.unit || "-"}
 
         <br>
 
-        MRP ₹${product.mrp}
-        | Sale ₹${product.salePrice}`;
+        MRP ₹${product.mrp || 0}
+        | Sale ₹${product.salePrice || 0}`;
 
         div.onclick = function(){
 
