@@ -13,7 +13,11 @@
 
 <style>
 
-*{margin:0;padding:0;box-sizing:border-box;}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
 body{
 font-family:Poppins;
@@ -40,13 +44,16 @@ padding:15px;
 box-shadow:0 0 10px rgba(0,0,0,0.08);
 display:flex;
 flex-direction:column;
+overflow:auto;
 }
 
 body.dark .panel{
 background:#1e1e1e;
 }
 
-.center{flex:1.3;}
+.center{
+flex:1.3;
+}
 
 input,button{
 width:100%;
@@ -55,11 +62,13 @@ margin-top:10px;
 border-radius:10px;
 border:1px solid #ccc;
 font-size:14px;
+font-family:Poppins;
 }
 
 body.dark input{
 background:#2a2a2a;
 color:white;
+border:1px solid #444;
 }
 
 button{
@@ -69,6 +78,10 @@ border:none;
 cursor:pointer;
 }
 
+button:hover{
+opacity:0.9;
+}
+
 .item{
 background:#f7f7f7;
 padding:10px;
@@ -76,18 +89,21 @@ margin-top:10px;
 border-radius:10px;
 }
 
-body.dark .item{background:#2a2a2a;}
+body.dark .item{
+background:#2a2a2a;
+}
 
 .invoiceBox{
 background:#f3f3f3;
 padding:10px;
 border-radius:10px;
 margin-top:10px;
-max-height:350px;
 overflow:auto;
 }
 
-body.dark .invoiceBox{background:#222;}
+body.dark .invoiceBox{
+background:#222;
+}
 
 .suggestionItem{
 padding:10px;
@@ -95,9 +111,33 @@ border-bottom:1px solid #eee;
 cursor:pointer;
 }
 
+body.dark .suggestionItem{
+border-bottom:1px solid #333;
+}
+
 .selected{
 background:#007bff;
 color:white;
+}
+
+h3{
+margin-bottom:10px;
+}
+
+.summary{
+line-height:30px;
+font-size:15px;
+}
+
+.totalBox{
+margin-top:10px;
+padding:10px;
+background:#eaf4ff;
+border-radius:10px;
+}
+
+body.dark .totalBox{
+background:#263241;
 }
 
 </style>
@@ -108,29 +148,42 @@ color:white;
 
 <div class="app">
 
-<!-- LEFT -->
+<!-- LEFT PANEL -->
+
 <div class="panel">
 
 <h3>SUMMARY</h3>
 
-<div>
+<div class="summary">
+
 Qty: <span id="tQty">0</span><br>
+
 MRP: ₹<span id="tMrp">0</span><br>
+
 Bill: ₹<span id="tBill">0</span><br>
-Savings: ₹<span id="tSave">0</span>
+
+Savings: ₹<span id="tSave">0</span><br>
+
+Items: <span id="tItems">0</span>
+
 </div>
 
 <button onclick="toggleDark()">Dark Mode</button>
 
-<button onclick="showInvoice()">Current Invoice: <span id="invUI"></span></button>
+<button onclick="showCurrentInvoice()">
+Current Invoice: <span id="invUI"></span>
+</button>
 
 <button onclick="saveBill()">Save Bill</button>
-<button onclick="resetBill()">Reset</button>
+
+<button onclick="resetBill()">Reset Bill</button>
+
 <button onclick="sendWhatsApp()">WhatsApp</button>
 
 <input type="date" id="dateFilter" onchange="renderInvoices()">
 
 <input type="text" id="invSearch" placeholder="Search Invoice No">
+
 <button onclick="searchInvoice()">Search Invoice</button>
 
 <div id="invoiceResult"></div>
@@ -139,24 +192,31 @@ Savings: ₹<span id="tSave">0</span>
 
 </div>
 
-<!-- CENTER -->
+<!-- CENTER PANEL -->
+
 <div class="panel center">
 
 <input type="file" id="file">
 
-<input type="text" id="search" placeholder="Search product">
+<input type="text" id="search" placeholder="Search product by name or code">
+
 <div id="suggestionsBox"></div>
 
-<input type="text" id="qty" placeholder="Qty (100g / 1kg / 2ltr)">
+<input type="number" id="qty" placeholder="Enter Qty">
 
 <button onclick="addItem()">Add Item</button>
 
 </div>
 
-<!-- RIGHT -->
+<!-- RIGHT PANEL -->
+
 <div class="panel">
 
-<h3>INVOICE LIST</h3>
+<h3>CURRENT BILL</h3>
+
+<div id="billItems" class="invoiceBox"></div>
+
+<h3 style="margin-top:15px;">SAVED INVOICES</h3>
 
 <div id="invoiceList" class="invoiceBox"></div>
 
@@ -171,24 +231,39 @@ Savings: ₹<span id="tSave">0</span>
 let products = [];
 
 let items = JSON.parse(localStorage.getItem("items")) || [];
+
 let bills = JSON.parse(localStorage.getItem("bills")) || [];
 
 let selected = null;
+
 let index = -1;
 
-let invoiceNo = bills.length ? bills[bills.length-1].invoiceNo + 1 : 1;
+let invoiceNo = bills.length
+? bills[bills.length - 1].invoiceNo + 1
+: 1;
 
 let lastBill = null;
 
-/* ================= INIT UI ================= */
+/* ================= INIT ================= */
 
 document.getElementById("invUI").innerText = invoiceNo;
+
+if(localStorage.getItem("dark") == 1){
+document.body.classList.add("dark");
+}
+
+render();
+totals();
+renderInvoices();
 
 /* ================= SAVE ================= */
 
 function saveAll(){
+
 localStorage.setItem("items", JSON.stringify(items));
+
 localStorage.setItem("bills", JSON.stringify(bills));
+
 }
 
 /* ================= EXCEL LOAD ================= */
@@ -200,30 +275,45 @@ let reader = new FileReader();
 reader.onload = ev => {
 
 let data = new Uint8Array(ev.target.result);
+
 let wb = XLSX.read(data,{type:"array"});
+
 let sh = wb.Sheets[wb.SheetNames[0]];
+
 let json = XLSX.utils.sheet_to_json(sh,{header:1});
 
 products = [];
 
 for(let i=1;i<json.length;i++){
-let r=json[i];
+
+let r = json[i];
+
 if(!r) continue;
 
 products.push({
-code:r[1],
-name:r[4],
-cat:r[0],
-mrp:+r[7]||0,
-sale:+r[8]||0,
-unit:r[5]
+
+code: r[1] || "",
+
+name: r[4] || "",
+
+cat: r[0] || "",
+
+mrp: +r[7] || 0,
+
+sale: +r[8] || 0,
+
+unit: r[5] || ""
+
 });
+
 }
 
-alert("Excel Loaded");
+alert("Excel Loaded Successfully ✔");
+
 };
 
 reader.readAsArrayBuffer(e.target.files[0]);
+
 };
 
 /* ================= SEARCH ================= */
@@ -231,26 +321,43 @@ reader.readAsArrayBuffer(e.target.files[0]);
 search.oninput = e => {
 
 let v = e.target.value.toLowerCase();
+
 suggestionsBox.innerHTML = "";
+
 index = -1;
 
 if(!v) return;
 
-products.filter(p =>
-(p.name||"").toLowerCase().includes(v) ||
-(p.code||"").toLowerCase().includes(v)
-).slice(0,15).forEach(p=>{
+products
+.filter(p =>
+
+(p.name || "").toLowerCase().includes(v) ||
+
+(p.code || "").toLowerCase().includes(v)
+
+)
+.slice(0,15)
+
+.forEach(p => {
 
 let d = document.createElement("div");
+
 d.className = "suggestionItem";
-d.innerText = p.name;
-d.onclick = ()=>select(p);
+
+d.innerHTML = `
+<b>${p.name}</b><br>
+₹${p.sale}
+`;
+
+d.onclick = () => selectProduct(p);
 
 suggestionsBox.appendChild(d);
+
 });
+
 };
 
-/* ================= KEYBOARD FIX ================= */
+/* ================= KEYBOARD ================= */
 
 search.onkeydown = e => {
 
@@ -258,210 +365,445 @@ let list = document.querySelectorAll(".suggestionItem");
 
 if(list.length === 0) return;
 
-if(e.key==="ArrowDown"){
+if(e.key === "ArrowDown"){
+
 e.preventDefault();
+
 index++;
-if(index >= list.length) index = 0;
-highlight(list);
+
+if(index >= list.length){
+index = 0;
 }
 
-if(e.key==="ArrowUp"){
+highlight(list);
+
+}
+
+if(e.key === "ArrowUp"){
+
 e.preventDefault();
+
 index--;
-if(index < 0) index = list.length-1;
-highlight(list);
+
+if(index < 0){
+index = list.length - 1;
 }
 
-if(e.key==="Enter"){
+highlight(list);
+
+}
+
+if(e.key === "Enter"){
+
 e.preventDefault();
 
-if(list[index]) list[index].click();
-else qty.focus();
+if(list[index]){
+list[index].click();
+}else{
+qty.focus();
 }
+
+}
+
 };
 
 function highlight(list){
-list.forEach(i=>i.classList.remove("selected"));
+
+list.forEach(i => i.classList.remove("selected"));
+
 if(list[index]){
+
 list[index].classList.add("selected");
-list[index].scrollIntoView({block:"nearest"});
-}
+
+list[index].scrollIntoView({
+block:"nearest"
+});
+
 }
 
-/* ================= SELECT ================= */
+}
 
-function select(p){
+/* ================= SELECT PRODUCT ================= */
+
+function selectProduct(p){
+
 selected = p;
+
 search.value = p.name;
+
 suggestionsBox.innerHTML = "";
+
 qty.focus();
+
 }
 
 /* ================= ADD ITEM ================= */
 
 function addItem(){
 
-if(!selected) return alert("Select product");
+if(!selected){
+
+alert("Select Product");
+
+return;
+
+}
 
 let q = parseFloat(qty.value);
-if(!q) return alert("Invalid qty");
 
-let ex = items.find(i=>i.code===selected.code);
+if(!q || q <= 0){
+
+alert("Invalid Quantity");
+
+return;
+
+}
+
+let ex = items.find(i => i.code === selected.code);
 
 if(ex){
+
 ex.qty += q;
-ex.total = ex.qty * selected.sale;
+
+ex.total = ex.qty * ex.sale;
+
 }else{
+
 items.push({
-code:selected.code,
-name:selected.name,
-cat:selected.cat,
-qty:q,
-mrp:selected.mrp,
-sale:selected.sale,
-total:q*selected.sale
+
+code: selected.code,
+
+name: selected.name,
+
+cat: selected.cat,
+
+qty: q,
+
+mrp: selected.mrp,
+
+sale: selected.sale,
+
+total: q * selected.sale
+
 });
+
 }
 
-selected=null;
-search.value="";
-qty.value="";
-suggestionsBox.innerHTML="";
+selected = null;
+
+search.value = "";
+
+qty.value = "";
+
+suggestionsBox.innerHTML = "";
 
 render();
+
 totals();
+
 saveAll();
+
 }
 
-/* ================= RENDER ================= */
+/* ================= RENDER CURRENT BILL ================= */
 
 function render(){
 
-list.innerHTML="";
+let list = document.getElementById("billItems");
 
-items.forEach((i,idx)=>{
+list.innerHTML = "";
+
+if(items.length === 0){
+
+list.innerHTML = "No Items Added";
+
+return;
+
+}
+
+items.forEach((i,idx) => {
+
 list.innerHTML += `
-<div class="item">
-<b>${i.name}</b><br>
-Qty:${i.qty}<br>
-₹${i.total.toFixed(2)}<br>
 
-<button onclick="edit(${idx})">Edit</button>
-<button onclick="del(${idx})" style="background:red;">Delete</button>
-</div>`;
+<div class="item">
+
+<b>${i.name}</b><br><br>
+
+Qty: ${i.qty}<br>
+
+MRP: ₹${i.mrp}<br>
+
+Sale: ₹${i.sale}<br>
+
+Total: ₹${i.total.toFixed(2)}<br><br>
+
+<button onclick="editItem(${idx})">
+Edit
+</button>
+
+<button onclick="deleteItem(${idx})"
+style="background:red;margin-top:6px;">
+Delete
+</button>
+
+</div>
+
+`;
+
 });
+
 }
 
 /* ================= TOTALS ================= */
 
 function totals(){
 
-let m=0,b=0,q=0;
+let mrp = 0;
 
-items.forEach(i=>{
-m += i.mrp*i.qty;
-b += i.total;
-q += i.qty;
+let bill = 0;
+
+let qty = 0;
+
+items.forEach(i => {
+
+mrp += i.mrp * i.qty;
+
+bill += i.total;
+
+qty += i.qty;
+
 });
 
-tQty.innerText=q;
-tMrp.innerText=m.toFixed(2);
-tBill.innerText=b.toFixed(2);
-tSave.innerText=(m-b).toFixed(2);
+document.getElementById("tQty").innerText = qty;
+
+document.getElementById("tMrp").innerText = mrp.toFixed(2);
+
+document.getElementById("tBill").innerText = bill.toFixed(2);
+
+document.getElementById("tSave").innerText = (mrp - bill).toFixed(2);
+
+document.getElementById("tItems").innerText = items.length;
+
+}
+
+/* ================= DELETE ITEM ================= */
+
+function deleteItem(idx){
+
+if(!confirm("Delete Item?")) return;
+
+items.splice(idx,1);
+
+saveAll();
+
+render();
+
+totals();
+
+}
+
+/* ================= EDIT ITEM ================= */
+
+function editItem(idx){
+
+let q = prompt(
+"Enter New Quantity",
+items[idx].qty
+);
+
+if(q === null) return;
+
+q = parseFloat(q);
+
+if(!q || q <= 0){
+
+alert("Invalid Quantity");
+
+return;
+
+}
+
+items[idx].qty = q;
+
+items[idx].total = q * items[idx].sale;
+
+saveAll();
+
+render();
+
+totals();
+
 }
 
 /* ================= SAVE BILL ================= */
 
 function saveBill(){
 
-if(items.length===0){
-alert("No items");
+if(items.length === 0){
+
+alert("No Items");
+
 return;
+
 }
 
-let mrpTotal=0;
-let grand=0;
+let mrpTotal = 0;
 
-items.forEach(i=>{
-mrpTotal += i.mrp*i.qty;
+let grand = 0;
+
+items.forEach(i => {
+
+mrpTotal += i.mrp * i.qty;
+
 grand += i.total;
+
 });
 
 let bill = {
-invoiceNo,
-date:new Date().toISOString().split("T")[0],
-time:new Date().toLocaleString(),
-items:[...items],
-mrpTotal,
-grand,
-savings:mrpTotal-grand
+
+invoiceNo: invoiceNo,
+
+date: new Date()
+.toISOString()
+.split("T")[0],
+
+time: new Date()
+.toLocaleString(),
+
+items: [...items],
+
+mrpTotal: mrpTotal,
+
+grand: grand,
+
+savings: mrpTotal - grand
+
 };
 
 bills.push(bill);
+
 lastBill = bill;
 
 invoiceNo++;
 
-items=[];
+items = [];
+
 saveAll();
 
-document.getElementById("invUI").innerText = invoiceNo;
+document.getElementById("invUI")
+.innerText = invoiceNo;
 
 render();
+
 totals();
+
 renderInvoices();
 
-alert("Bill Saved ✔");
+alert("Bill Saved Successfully ✔");
+
 }
 
-/* ================= INVOICE LIST ================= */
+/* ================= RENDER INVOICES ================= */
 
 function renderInvoices(){
 
 let box = document.getElementById("invoiceList");
+
 box.innerHTML = "";
 
-let date = dateFilter.value;
+let date = document.getElementById("dateFilter").value;
 
-let filtered = date ? bills.filter(b=>b.date===date) : bills;
+let filtered = date
+? bills.filter(b => b.date === date)
+: bills;
 
-filtered.forEach(b=>{
-box.innerHTML += `
-<div class="item" onclick="openBill(${b.invoiceNo})">
-<b>#${b.invoiceNo}</b><br>
-${b.date}<br>
-₹${b.grand}
-</div>`;
-});
+if(filtered.length === 0){
+
+box.innerHTML = "No Saved Bills";
+
+return;
+
 }
 
+filtered
+.slice()
+.reverse()
+
+.forEach(b => {
+
+box.innerHTML += `
+
+<div class="item"
+onclick="openBill(${b.invoiceNo})">
+
+<b>Invoice #${b.invoiceNo}</b><br><br>
+
+Date: ${b.date}<br>
+
+Total: ₹${b.grand.toFixed(2)}<br>
+
+Items: ${b.items.length}
+
+</div>
+
+`;
+
+});
+
+}
+
+/* ================= OPEN BILL ================= */
+
 function openBill(no){
-let b = bills.find(x=>x.invoiceNo===no);
+
+let b = bills.find(x => x.invoiceNo === no);
+
 if(!b) return;
 
-items = b.items;
+items = [...b.items];
+
 render();
+
 totals();
+
 }
 
 /* ================= SEARCH INVOICE ================= */
 
 function searchInvoice(){
 
-let no = parseInt(invSearch.value);
+let no = parseInt(
+document.getElementById("invSearch").value
+);
 
-let b = bills.find(x=>x.invoiceNo===no);
+let b = bills.find(x => x.invoiceNo === no);
 
 if(!b){
-invoiceResult.innerHTML="Not Found";
+
+document.getElementById("invoiceResult")
+.innerHTML = "Invoice Not Found";
+
 return;
+
 }
 
-invoiceResult.innerHTML = `
+document.getElementById("invoiceResult")
+.innerHTML = `
+
+<div class="item">
+
 <b>Invoice #${b.invoiceNo}</b><br>
-Date:${b.date}<br>
-Total:₹${b.grand}
+
+Date: ${b.date}<br>
+
+Total: ₹${b.grand.toFixed(2)}<br>
+
+Savings: ₹${b.savings.toFixed(2)}
+
+</div>
+
 `;
+
 }
 
 /* ================= WHATSAPP ================= */
@@ -469,61 +811,130 @@ Total:₹${b.grand}
 function sendWhatsApp(){
 
 if(!lastBill){
-alert("No saved bill");
+
+alert("Save Bill First");
+
 return;
+
 }
 
-let msg="🧾 BILL\n\n";
+let msg = "🧾 SUPERMARKET BILL\n\n";
 
-lastBill.items.forEach((i,idx)=>{
+lastBill.items.forEach((i,idx) => {
+
 msg += `${idx+1}. ${i.name}
-Qty:${i.qty}
-₹${i.total}\n`;
-});
+Qty: ${i.qty}
+₹${i.total.toFixed(2)}
 
-msg += `
-TOTAL: ₹${lastBill.grand}
-INVOICE: ${lastBill.invoiceNo}
 `;
 
-window.open("https://wa.me/?text="+encodeURIComponent(msg));
+});
+
+msg += `TOTAL: ₹${lastBill.grand.toFixed(2)}
+
+SAVINGS: ₹${lastBill.savings.toFixed(2)}
+
+INVOICE: ${lastBill.invoiceNo}`;
+
+window.open(
+"https://wa.me/?text=" +
+encodeURIComponent(msg)
+);
+
 }
 
 /* ================= RESET ================= */
 
 function resetBill(){
-items=[];
+
+if(!confirm("Reset Current Bill?")) return;
+
+items = [];
+
 saveAll();
+
 render();
+
 totals();
+
 }
 
-/* ================= DARK ================= */
+/* ================= DARK MODE ================= */
 
 function toggleDark(){
+
 document.body.classList.toggle("dark");
-localStorage.setItem("dark",
-document.body.classList.contains("dark")?1:0);
+
+localStorage.setItem(
+"dark",
+document.body.classList.contains("dark")
+? 1
+: 0
+);
+
 }
 
-/* ================= EXCEL ================= */
+/* ================= EXCEL EXPORT ================= */
 
 function downloadExcel(){
 
-let data=[["Name","Category","Qty","Total"]];
+if(items.length === 0){
 
-items.forEach(i=>{
-data.push([i.name,i.cat,i.qty,i.total]);
+alert("No Items");
+
+return;
+
+}
+
+let data = [[
+"Name",
+"Category",
+"Qty",
+"MRP",
+"Sale",
+"Total"
+]];
+
+items.forEach(i => {
+
+data.push([
+i.name,
+i.cat,
+i.qty,
+i.mrp,
+i.sale,
+i.total
+]);
+
 });
 
-let wb=XLSX.utils.book_new();
-let ws=XLSX.utils.aoa_to_sheet(data);
+let wb = XLSX.utils.book_new();
 
-XLSX.utils.book_append_sheet(wb,ws,"Report");
-XLSX.writeFile(wb,"sales.xlsx");
+let ws = XLSX.utils.aoa_to_sheet(data);
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+"Sales"
+);
+
+XLSX.writeFile(
+wb,
+"sales.xlsx"
+);
+
+}
+
+/* ================= SHOW CURRENT INVOICE ================= */
+
+function showCurrentInvoice(){
+
+alert("Current Invoice No: " + invoiceNo);
+
 }
 
 </script>
 
 </body>
+
 </html>
