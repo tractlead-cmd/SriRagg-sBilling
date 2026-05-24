@@ -99,6 +99,7 @@ padding:10px;
 border-radius:10px;
 margin-top:10px;
 overflow:auto;
+flex:1;
 }
 
 body.dark .invoiceBox{
@@ -127,17 +128,6 @@ margin-bottom:10px;
 .summary{
 line-height:30px;
 font-size:15px;
-}
-
-.totalBox{
-margin-top:10px;
-padding:10px;
-background:#eaf4ff;
-border-radius:10px;
-}
-
-body.dark .totalBox{
-background:#263241;
 }
 
 </style>
@@ -180,8 +170,6 @@ Current Invoice: <span id="invUI"></span>
 
 <button onclick="sendWhatsApp()">WhatsApp</button>
 
-<input type="date" id="dateFilter" onchange="renderInvoices()">
-
 <input type="text" id="invSearch" placeholder="Search Invoice No">
 
 <button onclick="searchInvoice()">Search Invoice</button>
@@ -216,10 +204,6 @@ Current Invoice: <span id="invUI"></span>
 
 <div id="billItems" class="invoiceBox"></div>
 
-<h3 style="margin-top:15px;">SAVED INVOICES</h3>
-
-<div id="invoiceList" class="invoiceBox"></div>
-
 </div>
 
 </div>
@@ -253,8 +237,8 @@ document.body.classList.add("dark");
 }
 
 render();
+
 totals();
-renderInvoices();
 
 /* ================= SAVE ================= */
 
@@ -359,8 +343,6 @@ suggestionsBox.appendChild(d);
 
 /* ================= KEYBOARD ================= */
 
-/* ================= KEYBOARD ================= */
-
 search.onkeydown = e => {
 
 let list = document.querySelectorAll(".suggestionItem");
@@ -429,46 +411,11 @@ e.preventDefault();
 
 addItem();
 
-/* MOVE CURSOR BACK TO SEARCH */
-
 setTimeout(() => {
 
 search.focus();
 
 }, 50);
-
-}
-
-};
-
-/* ================= HIGHLIGHT ================= */
-
-function highlight(list){
-
-list.forEach(i =>
-i.classList.remove("selected")
-);
-
-if(list[index]){
-
-list[index].classList.add("selected");
-
-list[index].scrollIntoView({
-block:"nearest"
-});
-
-}
-
-}
-/* ================= QTY ENTER ================= */
-
-qty.onkeydown = e => {
-
-if(e.key === "Enter"){
-
-e.preventDefault();
-
-addItem();
 
 }
 
@@ -576,7 +523,7 @@ saveAll();
 
 }
 
-/* ================= RENDER CURRENT BILL ================= */
+/* ================= RENDER ================= */
 
 function render(){
 
@@ -768,74 +715,7 @@ render();
 
 totals();
 
-renderInvoices();
-
 alert("Bill Saved Successfully ✔");
-
-}
-
-/* ================= RENDER INVOICES ================= */
-
-function renderInvoices(){
-
-let box = document.getElementById("invoiceList");
-
-box.innerHTML = "";
-
-let date = document.getElementById("dateFilter").value;
-
-let filtered = date
-? bills.filter(b => b.date === date)
-: bills;
-
-if(filtered.length === 0){
-
-box.innerHTML = "No Saved Bills";
-
-return;
-
-}
-
-filtered
-.slice()
-.reverse()
-
-.forEach(b => {
-
-box.innerHTML += `
-
-<div class="item"
-onclick="openBill(${b.invoiceNo})">
-
-<b>Invoice #${b.invoiceNo}</b><br><br>
-
-Date: ${b.date}<br>
-
-Total: ₹${b.grand.toFixed(2)}<br>
-
-Items: ${b.items.length}
-
-</div>
-
-`;
-
-});
-
-}
-
-/* ================= OPEN BILL ================= */
-
-function openBill(no){
-
-let b = bills.find(x => x.invoiceNo === no);
-
-if(!b) return;
-
-items = [...b.items];
-
-render();
-
-totals();
 
 }
 
