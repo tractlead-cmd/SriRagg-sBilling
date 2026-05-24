@@ -359,6 +359,8 @@ suggestionsBox.appendChild(d);
 
 /* ================= KEYBOARD ================= */
 
+/* ================= KEYBOARD ================= */
+
 search.onkeydown = e => {
 
 let list = document.querySelectorAll(".suggestionItem");
@@ -417,6 +419,47 @@ qty.focus();
 
 };
 
+/* ================= QTY ENTER ================= */
+
+qty.onkeydown = e => {
+
+if(e.key === "Enter"){
+
+e.preventDefault();
+
+addItem();
+
+/* MOVE CURSOR BACK TO SEARCH */
+
+setTimeout(() => {
+
+search.focus();
+
+}, 50);
+
+}
+
+};
+
+/* ================= HIGHLIGHT ================= */
+
+function highlight(list){
+
+list.forEach(i =>
+i.classList.remove("selected")
+);
+
+if(list[index]){
+
+list[index].classList.add("selected");
+
+list[index].scrollIntoView({
+block:"nearest"
+});
+
+}
+
+}
 /* ================= QTY ENTER ================= */
 
 qty.onkeydown = e => {
