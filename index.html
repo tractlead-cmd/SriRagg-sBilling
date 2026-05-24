@@ -365,6 +365,8 @@ let list = document.querySelectorAll(".suggestionItem");
 
 if(list.length === 0) return;
 
+/* DOWN KEY */
+
 if(e.key === "ArrowDown"){
 
 e.preventDefault();
@@ -378,6 +380,8 @@ index = 0;
 highlight(list);
 
 }
+
+/* UP KEY */
 
 if(e.key === "ArrowUp"){
 
@@ -393,23 +397,47 @@ highlight(list);
 
 }
 
+/* ENTER KEY */
+
 if(e.key === "Enter"){
 
 e.preventDefault();
 
 if(list[index]){
+
 list[index].click();
+
 }else{
+
 qty.focus();
+
 }
 
 }
 
 };
 
+/* ================= QTY ENTER ================= */
+
+qty.onkeydown = e => {
+
+if(e.key === "Enter"){
+
+e.preventDefault();
+
+addItem();
+
+}
+
+};
+
+/* ================= HIGHLIGHT ================= */
+
 function highlight(list){
 
-list.forEach(i => i.classList.remove("selected"));
+list.forEach(i =>
+i.classList.remove("selected")
+);
 
 if(list[index]){
 
