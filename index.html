@@ -180,7 +180,8 @@ Reset Bill
 WhatsApp
 </button>
 
-<input type="text"
+<input
+type="text"
 id="invSearch"
 placeholder="Search Invoice No">
 
@@ -202,13 +203,15 @@ Download Excel
 
 <input type="file" id="file">
 
-<input type="text"
+<input
+type="text"
 id="search"
 placeholder="Search product by name or code">
 
 <div id="suggestionsBox"></div>
 
-<input type="number"
+<input
+type="number"
 id="qty"
 placeholder="Enter Qty">
 
@@ -232,14 +235,10 @@ CURRENT BILL
 id="shareInvoiceBtn"
 onclick="shareOpenedInvoice()"
 style="display:none;margin-top:10px;">
+
 Share Invoice on WhatsApp
+
 </button>
-
-<h3 style="margin-top:15px;">
-SAVED INVOICES
-</h3>
-
-<div id="invoiceList" class="invoiceBox"></div>
 
 </div>
 
@@ -282,8 +281,6 @@ render();
 
 totals();
 
-renderInvoices();
-
 /* ================= SAVE ================= */
 
 function saveAll(){
@@ -308,11 +305,14 @@ let reader = new FileReader();
 
 reader.onload = ev => {
 
-let data = new Uint8Array(ev.target.result);
+let data =
+new Uint8Array(ev.target.result);
 
-let wb = XLSX.read(data,{type:"array"});
+let wb =
+XLSX.read(data,{type:"array"});
 
-let sh = wb.Sheets[wb.SheetNames[0]];
+let sh =
+wb.Sheets[wb.SheetNames[0]];
 
 let json =
 XLSX.utils.sheet_to_json(sh,{header:1});
@@ -347,7 +347,9 @@ alert("Excel Loaded Successfully ✔");
 
 };
 
-reader.readAsArrayBuffer(e.target.files[0]);
+reader.readAsArrayBuffer(
+e.target.files[0]
+);
 
 };
 
@@ -355,7 +357,8 @@ reader.readAsArrayBuffer(e.target.files[0]);
 
 search.oninput = e => {
 
-let v = e.target.value.toLowerCase();
+let v =
+e.target.value.toLowerCase();
 
 suggestionsBox.innerHTML = "";
 
@@ -366,18 +369,23 @@ if(!v) return;
 products
 .filter(p =>
 
-(p.name || "").toLowerCase().includes(v)
+(p.name || "")
+.toLowerCase()
+.includes(v)
 
 ||
 
-(p.code || "").toLowerCase().includes(v)
+(p.code || "")
+.toLowerCase()
+.includes(v)
 
 )
 .slice(0,15)
 
 .forEach(p => {
 
-let d = document.createElement("div");
+let d =
+document.createElement("div");
 
 d.className = "suggestionItem";
 
@@ -511,7 +519,8 @@ return;
 
 }
 
-let q = parseFloat(qty.value);
+let q =
+parseFloat(qty.value);
 
 if(!q || q <= 0){
 
@@ -522,13 +531,16 @@ return;
 }
 
 let ex =
-items.find(i => i.code === selected.code);
+items.find(i =>
+i.code === selected.code
+);
 
 if(ex){
 
 ex.qty += q;
 
-ex.total = ex.qty * ex.sale;
+ex.total =
+ex.qty * ex.sale;
 
 }else{
 
@@ -614,7 +626,9 @@ Edit
 <button
 onclick="deleteItem(${idx})"
 style="background:red;margin-top:6px;">
+
 Delete
+
 </button>
 
 </div>
@@ -651,9 +665,11 @@ tMrp.innerText = mrp.toFixed(2);
 
 tBill.innerText = bill.toFixed(2);
 
-tSave.innerText = (mrp - bill).toFixed(2);
+tSave.innerText =
+(mrp - bill).toFixed(2);
 
-tItems.innerText = items.length;
+tItems.innerText =
+items.length;
 
 }
 
@@ -768,70 +784,67 @@ render();
 
 totals();
 
-renderInvoices();
-
 alert("Bill Saved Successfully ✔");
 
 }
 
-/* ================= SAVED INVOICES ================= */
+/* ================= SEARCH INVOICE ================= */
 
-function renderInvoices(){
+function searchInvoice(){
 
-let box =
-document.getElementById("invoiceList");
+let no =
+parseInt(invSearch.value);
 
-box.innerHTML = "";
+let b =
+bills.find(x =>
+x.invoiceNo === no
+);
 
-if(bills.length === 0){
+if(!b){
 
-box.innerHTML = "No Saved Bills";
+invoiceResult.innerHTML =
+"Invoice Not Found";
 
 return;
 
 }
 
-bills
-.slice()
-.reverse()
-
-.forEach(b => {
-
-box.innerHTML += `
+invoiceResult.innerHTML = `
 
 <div class="item"
 onclick="openInvoiceDetails(${b.invoiceNo})"
 style="cursor:pointer;">
 
-<b>Invoice #${b.invoiceNo}</b><br><br>
+<b>Invoice #${b.invoiceNo}</b><br>
 
 Date: ${b.date}<br>
 
 Total: ₹${b.grand.toFixed(2)}<br>
 
-Items: ${b.items.length}
+Savings: ₹${b.savings.toFixed(2)}
 
 </div>
 
 `;
 
-});
-
 }
 
-/* ================= OPEN INVOICE ================= */
+/* ================= OPEN SEARCHED INVOICE ================= */
 
 function openInvoiceDetails(no){
 
 let b =
-bills.find(x => x.invoiceNo === no);
+bills.find(x =>
+x.invoiceNo === no
+);
 
 if(!b) return;
 
 openedInvoice = b;
 
 document.getElementById("rightTitle")
-.innerText = "INVOICE #" + b.invoiceNo;
+.innerText =
+"INVOICE #" + b.invoiceNo;
 
 document.getElementById("shareInvoiceBtn")
 .style.display = "block";
@@ -874,45 +887,6 @@ Invoice: #${b.invoiceNo}<br>
 Date: ${b.date}<br>
 
 Grand Total: ₹${b.grand.toFixed(2)}<br>
-
-Savings: ₹${b.savings.toFixed(2)}
-
-</div>
-
-`;
-
-}
-
-/* ================= SEARCH INVOICE ================= */
-
-function searchInvoice(){
-
-let no =
-parseInt(invSearch.value);
-
-let b =
-bills.find(x => x.invoiceNo === no);
-
-if(!b){
-
-invoiceResult.innerHTML =
-"Invoice Not Found";
-
-return;
-
-}
-
-invoiceResult.innerHTML = `
-
-<div class="item"
-onclick="openInvoiceDetails(${b.invoiceNo})"
-style="cursor:pointer;">
-
-<b>Invoice #${b.invoiceNo}</b><br>
-
-Date: ${b.date}<br>
-
-Total: ₹${b.grand.toFixed(2)}<br>
 
 Savings: ₹${b.savings.toFixed(2)}
 
@@ -1029,7 +1003,7 @@ document.body.classList.contains("dark")
 
 }
 
-/* ================= EXCEL ================= */
+/* ================= EXCEL EXPORT ================= */
 
 function downloadExcel(){
 
@@ -1063,7 +1037,8 @@ i.total
 
 });
 
-let wb = XLSX.utils.book_new();
+let wb =
+XLSX.utils.book_new();
 
 let ws =
 XLSX.utils.aoa_to_sheet(data);
